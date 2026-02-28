@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Andreas Mavroeidakos — Pixel Portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- ═══════════ MENU SCREEN ═══════════ -->
+  <div id="view-menu" class="view active">
+    <div class="menu-container">
+      <h1 class="menu-title">
+        <span class="title-line title-a">ANDREAS</span>
+        <span class="title-line title-m">MAVROEIDAKOS</span>
+      </h1>
+      <p class="menu-subtitle">PIXEL PORTFOLIO</p>
+      <div class="menu-buttons">
+        <button class="pixel-btn btn-play" data-view="game">&#9654; PLAY</button>
+        <button class="pixel-btn btn-info" data-view="info">&#9432; INFO</button>
+        <button class="pixel-btn btn-credits" data-view="credits">&#9733; CREDITS</button>
+      </div>
+    </div>
+    <canvas id="menu-bg-canvas"></canvas>
+  </div>
+
+  <!-- ═══════════ GAME SCREEN ═══════════ -->
+  <div id="view-game" class="view">
+    <canvas id="game-canvas"></canvas>
+    <!-- HUD overlay -->
+    <div id="game-hud">
+      <div class="hud-row">
+        <div class="hud-item">
+          <span class="hud-label">HP</span>
+          <div class="health-bar-outer">
+            <div class="health-bar-inner" id="health-bar"></div>
+          </div>
+          <span class="hud-hp-text" id="hp-text">100</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">SCORE</span>
+          <span class="hud-value" id="score-display">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">LEVEL</span>
+          <span class="hud-value" id="level-display">1</span>
+        </div>
+      </div>
+    </div>
+    <!-- Pause / back button -->
+    <button class="pixel-btn btn-back game-back" id="game-back-btn">&#9664; MENU</button>
+    <!-- Level intro overlay -->
+    <div id="level-intro" class="overlay hidden">
+      <div class="overlay-box">
+        <h2 id="level-intro-title">LEVEL 1</h2>
+        <p id="level-intro-theme">THEME: PC</p>
+        <p class="overlay-hint">CLICK THE FALLING LETTERS!</p>
+        <button class="pixel-btn" id="level-start-btn">START</button>
+      </div>
+    </div>
+    <!-- Game Over overlay -->
+    <div id="game-over" class="overlay hidden">
+      <div class="overlay-box">
+        <h2 class="game-over-title">GAME OVER</h2>
+        <p class="game-over-score">SCORE: <span id="go-score">0</span></p>
+        <p class="game-over-level">REACHED LEVEL <span id="go-level">1</span></p>
+        <button class="pixel-btn" id="retry-btn">TRY AGAIN</button>
+        <button class="pixel-btn btn-back" id="go-menu-btn">MENU</button>
+      </div>
+    </div>
+    <!-- Win overlay -->
+    <div id="game-win" class="overlay hidden">
+      <div class="overlay-box win-box">
+        <h2 class="win-title">YOU WIN!</h2>
+        <p class="win-score">FINAL SCORE: <span id="win-score">0</span></p>
+        <p class="win-msg">THANKS FOR PLAYING!</p>
+        <button class="pixel-btn" id="win-menu-btn">MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ INFO SCREEN ═══════════ -->
+  <div id="view-info" class="view">
+    <div class="info-container">
+      <h2 class="section-title">INFO</h2>
+      <div id="info-cards" class="cards-wrapper">
+        <!-- Cards injected by JS -->
+      </div>
+      <button class="pixel-btn btn-back" data-view="menu">&#9664; BACK</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ CREDITS SCREEN ═══════════ -->
+  <div id="view-credits" class="view">
+    <div class="credits-starfield" id="credits-starfield"></div>
+    <div class="credits-scroll-wrapper">
+      <div class="credits-scroll" id="credits-scroll">
+        <p class="credits-label">A GAME BY</p>
+        <p class="credits-name">ANDREAS<br>MAVROEIDAKOS</p>
+        <br><br>
+        <p class="credits-label">BUILT WITH</p>
+        <p class="credits-item">HTML &bull; CSS &bull; JAVASCRIPT</p>
+        <br><br>
+        <p class="credits-label">POWERED BY</p>
+        <p class="credits-item">CLAUDE OPUS 4.6</p>
+        <br><br>
+        <p class="credits-label">SPECIAL THANKS</p>
+        <p class="credits-item">THE TEUFEL ROCKSTER XL</p>
+        <p class="credits-item">FOR KEEPING THE VIBES ALIVE</p>
+        <br><br>
+        <p class="credits-label">AND TO YOU</p>
+        <p class="credits-item">FOR STOPPING BY</p>
+        <br><br><br>
+        <p class="credits-name thanks">THANKS FOR PLAYING!</p>
+        <br><br><br><br><br>
+      </div>
+    </div>
+    <button class="pixel-btn btn-back credits-back-btn" data-view="menu">&#9664; BACK</button>
+  </div>
+
+  <!-- JS -->
+  <script src="js/audio.js"></script>
+  <script src="js/backgrounds.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
