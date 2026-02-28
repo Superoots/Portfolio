@@ -4,7 +4,6 @@
 const Game = (() => {
   /* ─── Constants ─── */
   const NAME = 'ANDREASMAVROEIDAKOS';
-  const LETTERS_PER_LEVEL = 18;
   const MAX_HEALTH = 100;
   const MISS_DAMAGE = 25;        // base damage per miss
   const MISS_DAMAGE_VAR = 5;     // ±variation
@@ -13,11 +12,11 @@ const Game = (() => {
   const HUD_HEIGHT = 50;         // pixels reserved for HUD at top
 
   const LEVEL_CONFIG = [
-    { maxSimultaneous: 1, speed: 1.5,  spawnInterval: 1400 },
-    { maxSimultaneous: 2, speed: 2.0,  spawnInterval: 1100 },
-    { maxSimultaneous: 3, speed: 2.5,  spawnInterval: 900 },
-    { maxSimultaneous: 4, speed: 3.0,  spawnInterval: 700 },
-    { maxSimultaneous: 5, speed: 3.5,  spawnInterval: 550 },
+    { maxSimultaneous: 1, speed: 1.5,  spawnInterval: 1400, letterCount: 13 },
+    { maxSimultaneous: 2, speed: 2.0,  spawnInterval: 1100, letterCount: 18 },
+    { maxSimultaneous: 3, speed: 2.5,  spawnInterval: 900,  letterCount: 18 },
+    { maxSimultaneous: 4, speed: 3.0,  spawnInterval: 700,  letterCount: 18 },
+    { maxSimultaneous: 5, speed: 3.5,  spawnInterval: 550,  letterCount: 18 },
   ];
 
   /* ─── State ─── */
@@ -176,7 +175,7 @@ const Game = (() => {
 
   /* ─── Level transition ─── */
   function checkLevelUp() {
-    if (lettersSpawned >= LETTERS_PER_LEVEL && letters.every(l => !l.alive)) {
+    if (lettersSpawned >= LEVEL_CONFIG[level].letterCount && letters.every(l => !l.alive)) {
       if (level < LEVEL_CONFIG.length - 1) {
         level++;
         lettersSpawned = 0;
@@ -225,7 +224,7 @@ const Game = (() => {
     const cfg = LEVEL_CONFIG[level];
     const activeCount = letters.filter(l => l.alive).length;
     if (
-      lettersSpawned < LETTERS_PER_LEVEL &&
+      lettersSpawned < cfg.letterCount &&
       activeCount < cfg.maxSimultaneous &&
       timestamp - lastSpawnTime > cfg.spawnInterval
     ) {
