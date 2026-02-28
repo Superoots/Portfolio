@@ -11,12 +11,14 @@ const Game = (() => {
   const REGEN_AMOUNT = 5;
   const HUD_HEIGHT = 50;         // pixels reserved for HUD at top
 
+  /* Speed values are in pixels-per-second (calibrated to old 60 fps feel:
+     old_px_per_frame × 60 = px/s). */
   const LEVEL_CONFIG = [
-    { maxSimultaneous: 1, speed: 1.5,  spawnInterval: 1400, letterCount: 13 },
-    { maxSimultaneous: 2, speed: 2.0,  spawnInterval: 1100, letterCount: 18 },
-    { maxSimultaneous: 3, speed: 2.5,  spawnInterval: 900,  letterCount: 18 },
-    { maxSimultaneous: 4, speed: 3.0,  spawnInterval: 700,  letterCount: 18 },
-    { maxSimultaneous: 5, speed: 3.5,  spawnInterval: 550,  letterCount: 18 },
+    { maxSimultaneous: 1, speed: 90,   spawnInterval: 1400, letterCount: 13 },
+    { maxSimultaneous: 2, speed: 120,  spawnInterval: 1100, letterCount: 18 },
+    { maxSimultaneous: 3, speed: 150,  spawnInterval: 900,  letterCount: 18 },
+    { maxSimultaneous: 4, speed: 180,  spawnInterval: 700,  letterCount: 18 },
+    { maxSimultaneous: 5, speed: 210,  spawnInterval: 550,  letterCount: 18 },
   ];
 
   /* ─── State ─── */
@@ -28,6 +30,7 @@ const Game = (() => {
   let particles = [];     // hit-explosion particles
   let frameId = null;
   let lastSpawnTime = 0;
+  let lastTimestamp = 0;
   let bgDrawn = false;
   let bgImage = null;     // off-screen canvas for background
   let onGameOver = null;  // callback
@@ -68,7 +71,7 @@ const Game = (() => {
       x,
       y: -size,
       size,
-      speed: LEVEL_CONFIG[level].speed + (Math.random() - 0.5) * 0.4,
+      speed: LEVEL_CONFIG[level].speed + (Math.random() - 0.5) * 24,
       alive: true,
       opacity: 1,
     };
@@ -205,11 +208,15 @@ const Game = (() => {
     }
   }
 
-  /* ─── Main loop ─── */
+  /* ─── Main loop (delta-time based) ─── */
   function loop(timestamp) {
     if (!running) return;
     frameId = requestAnimationFrame(loop);
-    if (paused) return;
+    if (paused) { lastTimestamp = timestamp; return; }
+
+    // Delta time in seconds, capped to avoid spiral-of-death on tab switch
+    const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.05);
+    lastTimestamp = timestamp;
 
     // Draw background
     if (!bgDrawn) cacheBackground();
@@ -242,7 +249,7 @@ const Game = (() => {
         letters.splice(i, 1);
         continue;
       }
-      l.y += l.speed;
+      l.y += l.speed * dt;  // pixels/sec × seconds = pixels
 
       // Missed — fell past bottom
       if (l.y > H + l.size) {
@@ -269,12 +276,12 @@ const Game = (() => {
       ctx.restore();
     }
 
-    // Update & draw particles
+    // Update & draw particles (delta-time)
     for (let i = particles.length - 1; i >= 0; i--) {
       const p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.life -= 0.03;
+      p.x += p.vx * dt * 60;   // normalize to ~60fps feel
+      p.y += p.vy * dt * 60;
+      p.life -= 1.8 * dt;       // ~0.03/frame × 60 = 1.8/sec
       if (p.life <= 0) {
         particles.splice(i, 1);
         continue;
@@ -331,6 +338,7 @@ const Game = (() => {
     running = true;
     paused = true; // will be unpaused by level intro
     lastSpawnTime = 0;
+    lastTimestamp = performance.now();
     updateHUD();
     resize();
     frameId = requestAnimationFrame(loop);
@@ -338,6 +346,7 @@ const Game = (() => {
 
   function unpause() {
     paused = false;
+    lastTimestamp = performance.now();
     lastSpawnTime = performance.now();
   }
 
