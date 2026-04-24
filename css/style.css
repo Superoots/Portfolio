@@ -83,7 +83,7 @@ html, body {
 .pixel-btn:hover {
   background: var(--accent-cyan);
   color: var(--bg-dark);
-  transform: scale(1.05);
+  transform: translateY(-2px);
 }
 .pixel-btn:active {
   transform: scale(0.97);
