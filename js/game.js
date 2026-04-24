@@ -80,6 +80,7 @@ const Game = (() => {
 
   // DOM refs populated by main.js bootstrap
   let knobEl, knobPointerEl, volValEl, compBarEl, compLabelEl, compMoodEl, multiplierEl, scoreEl, stageLabelEl, timeEl;
+  let powerMultChip, powerFreezeChip;
 
   /* ─── Sizing ─── */
   let W, H, dpr;
@@ -136,16 +137,16 @@ const Game = (() => {
     wrap.innerHTML = '';
     for (let i = 0; i <= 11; i++) {
       const a = (-135 + (i / 11) * 270) * (Math.PI / 180);
-      const r = 80;
-      const x = 90 + Math.cos(a) * r;
-      const y = 90 + Math.sin(a) * r;
+      const r = 102;
+      const x = 115 + Math.cos(a) * r;
+      const y = 115 + Math.sin(a) * r;
       const tick = document.createElement('div');
       tick.className = 'rockster-tick';
       tick.textContent = i;
       tick.style.cssText = `
-        position:absolute;left:${x - 10}px;top:${y - 10}px;
-        width:20px;height:20px;display:flex;align-items:center;justify-content:center;
-        font-family:inherit;font-size:${i === 11 ? 12 : 10}px;
+        position:absolute;left:${x - 12}px;top:${y - 12}px;
+        width:24px;height:24px;display:flex;align-items:center;justify-content:center;
+        font-family:inherit;font-size:${i === 11 ? 14 : 12}px;
         color:${i === 11 ? '#ff0000' : '#555'};
         font-weight:${i === 11 ? 'bold' : 'normal'};
         pointer-events:none;
@@ -461,8 +462,11 @@ const Game = (() => {
         const vr = intensity;
         change = vr * vr * 0.12 * dt * sensitivity * stage.fillMul;
       }
-      if (volume <= 2) {
-        change -= 0.06 * dt * (volume === 0 ? 2 : 1) * stage.drainMul;
+      // Drain at low volume: tapered so chilling out always cools the bar a bit
+      if (volume <= 3) {
+        const drainByVol = { 0: 2.2, 0.5: 1.6, 1: 1.2, 1.5: 0.9, 2: 0.7, 2.5: 0.5, 3: 0.35 };
+        const drainMult = drainByVol[volume] != null ? drainByVol[volume] : 0.35;
+        change -= 0.07 * dt * drainMult * stage.drainMul;
       }
     }
     complaint = Math.max(0, Math.min(1, complaint + change));
@@ -616,6 +620,23 @@ const Game = (() => {
       const s = Math.floor(remain % 60);
       timeEl.textContent = m + ':' + String(s).padStart(2, '0');
       timeEl.classList.toggle('rockster-time-urgent', remain <= 10 && remain > 0);
+    }
+    if (powerMultChip) {
+      if (powerMultTimer > 0) {
+        powerMultChip.classList.remove('hidden');
+        powerMultChip.querySelector('.chip-label').textContent = 'x' + powerMult.toFixed(1);
+        powerMultChip.querySelector('.chip-time').textContent = powerMultTimer.toFixed(1) + 's';
+      } else {
+        powerMultChip.classList.add('hidden');
+      }
+    }
+    if (powerFreezeChip) {
+      if (freezeTimer > 0) {
+        powerFreezeChip.classList.remove('hidden');
+        powerFreezeChip.querySelector('.chip-time').textContent = freezeTimer.toFixed(1) + 's';
+      } else {
+        powerFreezeChip.classList.add('hidden');
+      }
     }
   }
 
@@ -1084,6 +1105,8 @@ const Game = (() => {
     scoreEl       = document.getElementById('score-display');
     stageLabelEl  = document.getElementById('rockster-stage');
     timeEl        = document.getElementById('rockster-time');
+    powerMultChip   = document.getElementById('rockster-power-mult');
+    powerFreezeChip = document.getElementById('rockster-power-freeze');
 
     preloadSpeaker();
     attachKnob();
