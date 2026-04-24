@@ -49,30 +49,30 @@
 
   // Init game engine
   Game.init(gameCanvas, {
-    onGameOver: (finalScore, reachedLevel) => {
+    onGameOver: (finalScore, reachedStage) => {
       document.getElementById('go-score').textContent = finalScore;
-      document.getElementById('go-level').textContent = reachedLevel + 1;
+      document.getElementById('go-level').textContent = (reachedStage + 1);
       gameOverOverlay.classList.remove('hidden');
     },
     onGameWin: (finalScore) => {
       document.getElementById('win-score').textContent = finalScore;
       gameWinOverlay.classList.remove('hidden');
     },
-    onLevelUp: (newLevel) => {
-      showLevelIntro(newLevel);
+    onLevelUp: (stageName) => {
+      // Stage-up banner is drawn inside the canvas; no overlay needed
     },
   });
 
   function startGame() {
     showView('game');
     hideAllOverlays();
-    Game.start(0);
-    showLevelIntro(0);
+    Game.start();
+    showIntro();
   }
 
-  function showLevelIntro(lvl) {
-    levelTitle.textContent = 'LEVEL ' + (lvl + 1);
-    levelTheme.textContent = 'THEME: ' + PixelBackgrounds.themeNames[lvl];
+  function showIntro() {
+    levelTitle.textContent = 'ROCKSTER XL';
+    levelTheme.textContent = 'STAGE: WARM UP';
     levelIntro.classList.remove('hidden');
   }
 
@@ -86,8 +86,8 @@
   document.getElementById('retry-btn').addEventListener('click', () => {
     Audio8Bit.playClick();
     hideAllOverlays();
-    Game.start(0);
-    showLevelIntro(0);
+    Game.start();
+    showIntro();
   });
 
   // Game Over → Menu
@@ -103,6 +103,17 @@
     hideAllOverlays();
     showView('menu');
   });
+
+  // Win → Retry
+  const retryWinBtn = document.getElementById('retry-win-btn');
+  if (retryWinBtn) {
+    retryWinBtn.addEventListener('click', () => {
+      Audio8Bit.playClick();
+      hideAllOverlays();
+      Game.start();
+      showIntro();
+    });
+  }
 
   // Game back button
   document.getElementById('game-back-btn').addEventListener('click', () => {

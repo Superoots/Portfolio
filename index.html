@@ -19,7 +19,10 @@
       </h1>
       <p class="menu-subtitle">PIXEL PORTFOLIO</p>
       <div class="menu-buttons">
-        <button class="pixel-btn btn-play" data-view="game">&#9654; PLAY</button>
+        <button class="pixel-btn btn-play" data-view="game">
+          &#9654; PLAY
+          <span class="new-badge">NEW</span>
+        </button>
         <button class="pixel-btn btn-info" data-view="info">&#9432; INFO</button>
         <button class="pixel-btn btn-waters" data-view="waters">
           &#128167; WATERS
@@ -37,7 +40,7 @@
     <!-- HUD overlay -->
     <div id="game-hud">
       <div class="hud-row">
-        <div class="hud-item">
+        <div class="hud-item hud-hidden">
           <span class="hud-label">HP</span>
           <div class="health-bar-outer">
             <div class="health-bar-inner" id="health-bar"></div>
@@ -45,43 +48,94 @@
           <span class="hud-hp-text" id="hp-text">100</span>
         </div>
         <div class="hud-item">
-          <span class="hud-label">SCORE</span>
-          <span class="hud-value" id="score-display">0</span>
+          <span class="hud-label">TIME</span>
+          <span class="hud-value hud-time" id="rockster-time">1:30</span>
         </div>
         <div class="hud-item">
+          <span class="hud-label">SCORE</span>
+          <span class="hud-value hud-score" id="score-display">0</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">MULT</span>
+          <span class="hud-value" id="rockster-mult">x1.0</span>
+        </div>
+        <div class="hud-item hud-hidden">
           <span class="hud-label">LEVEL</span>
           <span class="hud-value" id="level-display">1</span>
         </div>
       </div>
+      <div id="rockster-stage-row">
+        <span class="hud-label">STAGE:</span>
+        <span id="rockster-stage">WARM UP</span>
+      </div>
     </div>
+
+    <!-- Complaint bar (neighbor) -->
+    <div id="rockster-neighbor">
+      <div id="rockster-comp-mood">😐</div>
+      <div class="rockster-comp-col">
+        <div class="rockster-comp-head">
+          <span class="rockster-comp-title">NEIGHBOR COMPLAINT</span>
+          <span id="rockster-comp-label">NORMAL</span>
+        </div>
+        <div class="rockster-comp-track">
+          <div class="rockster-comp-bar" id="rockster-comp-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Volume knob + slider -->
+    <div id="rockster-knob-wrap">
+      <div class="rockster-knob-label">VOLUME</div>
+      <div class="rockster-controls-row">
+        <div id="rockster-knob-outer">
+          <div id="rockster-knob">
+            <div id="rockster-knob-pointer"></div>
+          </div>
+          <div id="rockster-knob-ticks"></div>
+        </div>
+        <div id="rockster-slider-col">
+          <input type="range" id="rockster-slider" min="0" max="11" step="0.5" value="0" orient="vertical">
+          <div class="rockster-slider-marks">
+            <span>11</span>
+            <span>6</span>
+            <span>0</span>
+          </div>
+        </div>
+      </div>
+      <div class="rockster-knob-value"><span id="rockster-vol">0.0</span> / 11</div>
+      <div class="rockster-knob-hint">DRAG &bull; SLIDE &bull; SCROLL &bull; ↑/↓</div>
+    </div>
+
     <!-- Pause / back button -->
     <button class="pixel-btn btn-back game-back" id="game-back-btn">&#9664; MENU</button>
-    <!-- Level intro overlay -->
+    <!-- Level (stage) intro overlay -->
     <div id="level-intro" class="overlay hidden">
       <div class="overlay-box">
-        <h2 id="level-intro-title">LEVEL 1</h2>
-        <p id="level-intro-theme">THEME: PC</p>
-        <p class="overlay-hint">CLICK THE FALLING LETTERS!</p>
+        <h2 id="level-intro-title">ROCKSTER XL</h2>
+        <p id="level-intro-theme">STAGE: WARM UP</p>
+        <p class="overlay-hint">CRANK THE VOLUME. DON'T GET BUSTED.</p>
         <button class="pixel-btn" id="level-start-btn">START</button>
       </div>
     </div>
     <!-- Game Over overlay -->
     <div id="game-over" class="overlay hidden">
       <div class="overlay-box">
-        <h2 class="game-over-title">GAME OVER</h2>
+        <h2 class="game-over-title">🚓 POLICE!</h2>
         <p class="game-over-score">SCORE: <span id="go-score">0</span></p>
-        <p class="game-over-level">REACHED LEVEL <span id="go-level">1</span></p>
+        <p class="game-over-level">STAGE REACHED: <span id="go-level">1</span></p>
         <button class="pixel-btn" id="retry-btn">TRY AGAIN</button>
         <button class="pixel-btn btn-back" id="go-menu-btn">MENU</button>
       </div>
     </div>
-    <!-- Win overlay -->
+    <!-- Win overlay (unused for rockster but kept for interface parity) -->
     <div id="game-win" class="overlay hidden">
       <div class="overlay-box win-box">
-        <h2 class="win-title">YOU WIN!</h2>
+        <h2 class="win-title">TIME'S UP!</h2>
         <p class="win-score">FINAL SCORE: <span id="win-score">0</span></p>
-        <p class="win-msg">THANKS FOR PLAYING!</p>
-        <button class="pixel-btn" id="win-menu-btn">MENU</button>
+        <p class="win-msg">PARTY WAS A HIT!</p>
+        <button class="pixel-btn" id="retry-win-btn">TRY AGAIN</button>
+        <button class="pixel-btn btn-back" id="win-menu-btn">MENU</button>
       </div>
     </div>
   </div>
