@@ -128,7 +128,7 @@
     },
     {
       title: 'DATA, AI & ALL THAT JAZZ',
-      body: "I work in the world of Data and AI — think models, pipelines, and the occasional existential conversation with Claude Opus 4.6. Yes, I have a favorite LLM. No, I'm not sorry about it.",
+      body: "I work in the world of Data and AI — think models, pipelines, and the occasional existential conversation with Claude Opus 4.7. Yes, I have a favorite LLM. No, I'm not sorry about it.",
       icon: '🤖',
     },
     {
@@ -148,7 +148,7 @@
     },
     {
       title: 'RANDOM FACTS & HOT TAKES',
-      body: "Claude Opus 4.6 > everything else (fight me). I can go from a Metallica riff to a chill R&B vibe in one playlist. Mavroeidakos means \"son of the dark one\" — pretty metal if you ask me. And yes, the Rockster XL is basically a family member at this point.",
+      body: "Claude Opus 4.7 > everything else (fight me). I can go from a Metallica riff to a chill R&B vibe in one playlist. Mavroeidakos means \"son of the dark one\" — pretty metal if you ask me. And yes, the Rockster XL is basically a family member at this point.",
       icon: '🔥',
     },
   ];
