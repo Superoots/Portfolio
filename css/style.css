@@ -96,6 +96,8 @@ html, body {
 .btn-info:hover { background: var(--accent-magenta); color: var(--text-white); }
 .btn-credits { background: var(--accent-orange); color: var(--bg-dark); }
 .btn-credits:hover { background: var(--accent-red); color: var(--text-white); }
+.btn-waters { background: var(--accent-magenta); color: var(--text-white); }
+.btn-waters:hover { background: var(--accent-cyan); color: var(--bg-dark); }
 .btn-back {
   background: var(--accent-red);
   color: var(--text-white);
@@ -125,42 +127,81 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  padding: 20px;
+  gap: 36px;
+  padding: 30px;
   text-align: center;
 }
 .menu-title {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 .title-line {
   display: block;
   line-height: 1.4;
 }
 .title-a {
-  font-size: clamp(20px, 5vw, 48px);
+  font-size: clamp(28px, 5vw, 72px);
   color: var(--accent-cyan);
-  text-shadow: 3px 3px 0 var(--accent-magenta);
+  text-shadow: 4px 4px 0 var(--accent-magenta);
 }
 .title-m {
-  font-size: clamp(10px, 2.8vw, 28px);
+  font-size: clamp(14px, 2.8vw, 42px);
   color: var(--accent-yellow);
-  text-shadow: 2px 2px 0 var(--accent-red);
+  text-shadow: 3px 3px 0 var(--accent-red);
 }
 .menu-subtitle {
-  font-size: clamp(8px, 1.8vw, 16px);
+  font-size: clamp(11px, 1.8vw, 22px);
   color: var(--text-dim);
-  letter-spacing: 6px;
+  letter-spacing: 8px;
 }
 .menu-buttons {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  margin-top: 16px;
+  gap: 26px;
+  margin-top: 24px;
 }
 .menu-buttons .pixel-btn {
-  min-width: 220px;
+  min-width: 330px;
+  font-size: clamp(13px, 1.6vw, 20px);
+  padding: 20px 40px;
+}
+.btn-credits-sep {
+  margin-top: 20px;
+}
+
+/* NEW badge on waters button */
+.new-badge {
+  position: absolute;
+  top: -10px;
+  right: -14px;
+  background: linear-gradient(135deg,
+    var(--accent-yellow) 0%,
+    var(--accent-orange) 50%,
+    var(--accent-yellow) 100%);
+  background-size: 200% 200%;
+  color: var(--bg-dark);
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 5px 9px;
+  transform: rotate(12deg);
+  box-shadow:
+    -3px 0 0 0 var(--bg-dark),
+     3px 0 0 0 var(--bg-dark),
+     0 -3px 0 0 var(--bg-dark),
+     0  3px 0 0 var(--bg-dark);
+  animation: newBadgePulse 1.6s ease-in-out infinite,
+             newBadgeShine 2.4s linear infinite;
+  z-index: 3;
+  pointer-events: none;
+}
+@keyframes newBadgePulse {
+  0%, 100% { transform: rotate(12deg) scale(1); }
+  50%      { transform: rotate(12deg) scale(1.12); }
+}
+@keyframes newBadgeShine {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
 }
 
 /* ═══════════════════════════════════════════
@@ -475,6 +516,238 @@ html, body {
 .credits-back-btn:hover {
   opacity: 1;
   transform: translateX(-50%) translateY(-2px);
+}
+
+/* ═══════════════════════════════════════════
+   WATERS SCREEN
+   ═══════════════════════════════════════════ */
+#view-waters {
+  background: var(--bg-dark);
+  overflow-y: auto;
+  justify-content: flex-start;
+  padding: 60px 24px 120px;
+  perspective: 1000px;
+}
+.waters-container {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+.waters-subtitle {
+  font-size: clamp(10px, 1.6vw, 15px);
+  color: var(--text-dim);
+  letter-spacing: 3px;
+  margin-top: -8px;
+  margin-bottom: 8px;
+}
+
+/* Hero card (#1) */
+.waters-hero {
+  position: relative;
+  width: 100%;
+  background: var(--bg-mid);
+  padding: 42px 30px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 21px;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  transform:
+    rotateX(calc(var(--ry, 0) * -6deg))
+    rotateY(calc(var(--rx, 0) * 6deg))
+    translateZ(0);
+  box-shadow:
+    -4px 0 0 0 var(--accent-yellow),
+     4px 0 0 0 var(--accent-yellow),
+     0 -4px 0 0 var(--accent-yellow),
+     0  4px 0 0 var(--accent-yellow);
+}
+.hero-medal {
+  font-size: 72px;
+  line-height: 1;
+}
+.hero-name {
+  font-size: clamp(21px, 3.2vw, 33px);
+  color: var(--accent-yellow);
+  text-shadow: 3px 3px 0 var(--accent-red);
+  text-align: center;
+}
+.hero-note {
+  font-size: clamp(10px, 1.5vw, 15px);
+  color: var(--text-white);
+  text-align: center;
+  line-height: 1.8;
+  max-width: 720px;
+}
+.hero-overall {
+  margin-top: 6px;
+}
+
+/* List (grid of #2–#8) */
+.waters-list {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 21px;
+}
+.water-card {
+  position: relative;
+  background: var(--bg-mid);
+  padding: 24px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+  transform:
+    rotateX(calc(var(--ry, 0) * -12deg))
+    rotateY(calc(var(--rx, 0) * 12deg))
+    translateZ(0);
+  box-shadow:
+    -4px 0 0 0 var(--accent-cyan),
+     4px 0 0 0 var(--accent-cyan),
+     0 -4px 0 0 var(--accent-cyan),
+     0  4px 0 0 var(--accent-cyan);
+}
+.water-card:hover,
+.waters-hero:hover {
+  box-shadow:
+    -6px 0 0 0 var(--accent-magenta),
+     6px 0 0 0 var(--accent-magenta),
+     0 -6px 0 0 var(--accent-magenta),
+     0  6px 0 0 var(--accent-magenta);
+}
+.water-rank-badge {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  font-size: 13px;
+  color: var(--accent-yellow);
+  background: var(--bg-dark);
+  padding: 4px 9px;
+  letter-spacing: 1px;
+}
+.hero-badge {
+  font-size: 18px;
+  top: 12px;
+  left: 12px;
+}
+.water-medal {
+  font-size: 42px;
+  line-height: 1;
+  margin-top: 9px;
+  color: var(--accent-cyan);
+  text-shadow: 3px 3px 0 var(--accent-magenta);
+}
+.water-name {
+  font-size: clamp(13px, 1.8vw, 18px);
+  color: var(--accent-cyan);
+  text-align: center;
+  text-shadow: 2px 2px 0 var(--accent-magenta);
+}
+.water-note {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.7;
+  min-height: 36px;
+}
+.water-stats {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+.stat-row {
+  display: grid;
+  grid-template-columns: 84px 1fr 42px;
+  align-items: center;
+  gap: 9px;
+}
+.waters-hero .stat-row {
+  grid-template-columns: 120px 1fr 48px;
+  gap: 14px;
+}
+.stat-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+.waters-hero .stat-label {
+  font-size: 10px;
+}
+.stat-value {
+  font-size: 10px;
+  color: var(--text-white);
+  text-align: right;
+}
+.stat-bar {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  height: 12px;
+}
+.waters-hero .stat-bar {
+  height: 14px;
+}
+.stat-cell {
+  display: block;
+  height: 100%;
+}
+
+/* Overall score */
+.water-overall {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: var(--bg-dark);
+  padding: 9px 18px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.overall-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+}
+.overall-value {
+  font-size: 16px;
+  color: var(--accent-green);
+}
+.hero-overall .overall-value {
+  font-size: 24px;
+  color: var(--accent-yellow);
+}
+
+/* Why footer */
+.waters-why {
+  width: 100%;
+  background: var(--bg-mid);
+  padding: 21px 24px;
+  text-align: center;
+  box-shadow:
+    -4px 0 0 0 var(--accent-green),
+     4px 0 0 0 var(--accent-green),
+     0 -4px 0 0 var(--accent-green),
+     0  4px 0 0 var(--accent-green);
+}
+.waters-why-title {
+  font-size: clamp(12px, 1.8vw, 16px);
+  color: var(--accent-green);
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+}
+.waters-why-body {
+  font-size: clamp(10px, 1.4vw, 13px);
+  color: var(--text-dim);
+  line-height: 1.9;
 }
 
 /* ═══════════════════════════════════════════

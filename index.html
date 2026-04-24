@@ -21,7 +21,11 @@
       <div class="menu-buttons">
         <button class="pixel-btn btn-play" data-view="game">&#9654; PLAY</button>
         <button class="pixel-btn btn-info" data-view="info">&#9432; INFO</button>
-        <button class="pixel-btn btn-credits" data-view="credits">&#9733; CREDITS</button>
+        <button class="pixel-btn btn-waters" data-view="waters">
+          &#128167; WATERS
+          <span class="new-badge">NEW</span>
+        </button>
+        <button class="pixel-btn btn-credits btn-credits-sep" data-view="credits">&#9733; CREDITS</button>
       </div>
     </div>
     <canvas id="menu-bg-canvas"></canvas>
@@ -119,6 +123,21 @@
       </div>
     </div>
     <button class="pixel-btn btn-back credits-back-btn" data-view="menu">&#9664; BACK</button>
+  </div>
+
+  <!-- ═══════════ WATERS SCREEN ═══════════ -->
+  <div id="view-waters" class="view">
+    <div class="waters-container">
+      <h2 class="section-title">MY WATER RANKING</h2>
+      <p class="waters-subtitle">YES, I RANKED WATER. FIGHT ME.</p>
+      <div id="waters-hero" class="waters-hero"></div>
+      <div id="waters-list" class="waters-list"></div>
+      <div class="waters-why">
+        <p class="waters-why-title">&#127807; WHY THIS RANKING?</p>
+        <p class="waters-why-body">Years of hydration research (a.k.a. drinking a lot of water). Intensity, taste, thirst-quenching, and price — scored honestly, ranked ruthlessly. Your mileage may vary.</p>
+      </div>
+      <button class="pixel-btn btn-back" data-view="menu">&#9664; BACK</button>
+    </div>
   </div>
 
   <!-- JS -->

@@ -11,6 +11,7 @@
     game:    document.getElementById('view-game'),
     info:    document.getElementById('view-info'),
     credits: document.getElementById('view-credits'),
+    waters:  document.getElementById('view-waters'),
   };
 
   function showView(name) {
@@ -175,6 +176,102 @@
     });
     cardsWrapper.appendChild(el);
   });
+
+  /* ═══════════════════════════════════════════
+     WATERS RANKING
+     ═══════════════════════════════════════════ */
+  const watersData = [
+    { rank: 1, name: 'BLACK FOREST',  medal: '🥇', intensity: 10,  taste: 10,  thirst: 10,  price: 9,  overall: 9.75, note: 'THE KING. AFFORDABLE, ICONIC, PERFECT.' },
+    { rank: 2, name: 'LAURETANA',     medal: '🥈', intensity: 9.5, taste: 9.5, thirst: 8,   price: 6,  overall: 8.25, note: 'ITALIAN PREMIUM. SMOOTH AND ELITE.' },
+    { rank: 3, name: 'VOLVIC',        medal: '🥉', intensity: 7.5, taste: 8.5, thirst: 10,  price: 6,  overall: 8.0,  note: 'VOLCANIC FRENCH CLASSIC. A BIT PRICIER, WORTH IT.' },
+    { rank: 4, name: 'ADELHOLZENER',  medal: '◆', intensity: 6,   taste: 9,   thirst: 8,   price: 7,  overall: 7.5,  note: 'BAVARIAN ALPINE PURITY.' },
+    { rank: 5, name: 'VIO',           medal: '◆', intensity: 4,   taste: 8.5, thirst: 9.5, price: 7,  overall: 7.25, note: 'SOFT, CLEAN, SOLID DAILY DRIVER.' },
+    { rank: 6, name: 'FIJI',          medal: '◆', intensity: 5,   taste: 7,   thirst: 9,   price: 1,  overall: 5.5,  note: 'SHIPPED HALFWAY AROUND THE WORLD. WHY.' },
+    { rank: 7, name: 'GEROLSTEINER',  medal: '◆', intensity: 9,   taste: 2,   thirst: 2,   price: 7,  overall: 5.0,  note: 'TOO MUCH MINERAL. TASTES LIKE A COIN.' },
+    { rank: 8, name: 'EVIAN',         medal: '◆', intensity: 3,   taste: 5,   thirst: 6,   price: 4,  overall: 4.5,  note: 'OVERPRICED. NAMED GERMANY\'S RIP-OFF OF THE MONTH 2016.' },
+  ];
+
+  function statBar(value) {
+    const filled = Math.round(value);
+    let color = 'var(--accent-red)';
+    if (value >= 7) color = 'var(--accent-green)';
+    else if (value >= 5) color = 'var(--accent-yellow)';
+    let html = '<div class="stat-bar">';
+    for (let i = 0; i < 10; i++) {
+      html += `<span class="stat-cell" style="background:${i < filled ? color : 'var(--bg-light)'}"></span>`;
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function statRow(label, value) {
+    return `
+      <div class="stat-row">
+        <span class="stat-label">${label}</span>
+        ${statBar(value)}
+        <span class="stat-value">${value}</span>
+      </div>`;
+  }
+
+  const waterHero = document.getElementById('waters-hero');
+  const watersList = document.getElementById('waters-list');
+
+  const hero = watersData[0];
+  waterHero.innerHTML = `
+    <div class="water-rank-badge hero-badge">#${hero.rank}</div>
+    <div class="water-medal hero-medal">${hero.medal}</div>
+    <h3 class="water-name hero-name">${hero.name}</h3>
+    <p class="water-note hero-note">${hero.note}</p>
+    <div class="water-stats">
+      ${statRow('INTENSITY', hero.intensity)}
+      ${statRow('TASTE',     hero.taste)}
+      ${statRow('THIRST',    hero.thirst)}
+      ${statRow('PRICE',     hero.price)}
+    </div>
+    <div class="water-overall hero-overall">
+      <span class="overall-label">OVERALL</span>
+      <span class="overall-value">${hero.overall}/10</span>
+    </div>
+  `;
+
+  watersData.slice(1).forEach(w => {
+    const el = document.createElement('div');
+    el.className = 'water-card';
+    el.innerHTML = `
+      <div class="water-rank-badge">#${w.rank}</div>
+      <div class="water-medal">${w.medal}</div>
+      <h4 class="water-name">${w.name}</h4>
+      <p class="water-note">${w.note}</p>
+      <div class="water-stats">
+        ${statRow('INTENSITY', w.intensity)}
+        ${statRow('TASTE',     w.taste)}
+        ${statRow('THIRST',    w.thirst)}
+        ${statRow('PRICE',     w.price)}
+      </div>
+      <div class="water-overall">
+        <span class="overall-label">OVERALL</span>
+        <span class="overall-value">${w.overall}/10</span>
+      </div>
+    `;
+    watersList.appendChild(el);
+  });
+
+  /* Cursor-tracking tilt for hero + cards */
+  function attachTilt(el) {
+    el.addEventListener('mousemove', e => {
+      const r = el.getBoundingClientRect();
+      const rx = ((e.clientX - r.left) / r.width  - 0.5) * 2;
+      const ry = ((e.clientY - r.top)  / r.height - 0.5) * 2;
+      el.style.setProperty('--rx', rx.toFixed(3));
+      el.style.setProperty('--ry', ry.toFixed(3));
+    });
+    el.addEventListener('mouseleave', () => {
+      el.style.setProperty('--rx', 0);
+      el.style.setProperty('--ry', 0);
+    });
+  }
+  attachTilt(waterHero);
+  watersList.querySelectorAll('.water-card').forEach(attachTilt);
 
   /* ═══════════════════════════════════════════
      CREDITS
