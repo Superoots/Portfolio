@@ -21,6 +21,8 @@
     if (name !== 'game') Game.stop();
     // Reset credits scroll if entering credits
     if (name === 'credits') resetCreditsScroll();
+    // Orientation lock is only enforced while playing
+    document.body.classList.toggle('game-active', name === 'game');
   }
 
   /* ─── Menu buttons ─── */

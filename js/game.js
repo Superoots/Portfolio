@@ -135,18 +135,25 @@ const Game = (() => {
     const wrap = document.getElementById('rockster-knob-ticks');
     if (!wrap) return;
     wrap.innerHTML = '';
+    // Read the current outer-box size so ticks scale with CSS (desktop vs mobile landscape)
+    const box = wrap.getBoundingClientRect();
+    const boxSize = Math.max(80, box.width || 230);
+    const center = boxSize / 2;
+    const r = boxSize * 0.445;
+    const tickBox = Math.max(14, boxSize * 0.10);
+    const fontNormal = Math.max(7,  boxSize * 0.053);
+    const fontEleven = Math.max(9,  boxSize * 0.062);
     for (let i = 0; i <= 11; i++) {
       const a = (-135 + (i / 11) * 270) * (Math.PI / 180);
-      const r = 102;
-      const x = 115 + Math.cos(a) * r;
-      const y = 115 + Math.sin(a) * r;
+      const x = center + Math.cos(a) * r;
+      const y = center + Math.sin(a) * r;
       const tick = document.createElement('div');
       tick.className = 'rockster-tick';
       tick.textContent = i;
       tick.style.cssText = `
-        position:absolute;left:${x - 12}px;top:${y - 12}px;
-        width:24px;height:24px;display:flex;align-items:center;justify-content:center;
-        font-family:inherit;font-size:${i === 11 ? 14 : 12}px;
+        position:absolute;left:${x - tickBox/2}px;top:${y - tickBox/2}px;
+        width:${tickBox}px;height:${tickBox}px;display:flex;align-items:center;justify-content:center;
+        font-family:inherit;font-size:${i === 11 ? fontEleven : fontNormal}px;
         color:${i === 11 ? '#ff0000' : '#555'};
         font-weight:${i === 11 ? 'bold' : 'normal'};
         pointer-events:none;
@@ -1110,6 +1117,12 @@ const Game = (() => {
 
     preloadSpeaker();
     attachKnob();
+
+    // Rebuild knob ticks on viewport changes (desktop resize, phone rotation)
+    window.addEventListener('resize', () => {
+      buildKnobTicks();
+      updateKnobTicks();
+    });
 
     // Canvas click for power-ups
     canvas.addEventListener('click', (e) => handleCanvasClick(e.clientX, e.clientY));

@@ -219,6 +219,7 @@ html, body {
   height: 100%;
   display: block;
   z-index: 0;
+  touch-action: manipulation;
 }
 
 /* HUD */
@@ -837,6 +838,17 @@ html, body {
   padding: 60px 24px 120px;
   perspective: 1000px;
 }
+.waters-top-back {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 50;
+  font-size: 11px;
+  padding: 10px 16px;
+  opacity: 0.85;
+  backdrop-filter: blur(4px);
+}
+.waters-top-back:hover { opacity: 1; }
 .waters-container {
   width: 100%;
   max-width: 1200px;
@@ -1099,4 +1111,260 @@ html, body {
   .game-back { font-size: 7px; padding: 6px 10px; }
   .card-header { padding: 12px 12px; }
   .card-body-inner { line-height: 1.8; }
+}
+
+/* ═══════════════════════════════════════════
+   ORIENTATION LOCK — forces landscape on mobile
+   ═══════════════════════════════════════════ */
+#orientation-lock {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--bg-dark);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 30px;
+  gap: 18px;
+}
+.rotate-icon {
+  font-size: 72px;
+  line-height: 1;
+  animation: rotateHint 2.2s ease-in-out infinite;
+  transform-origin: center;
+}
+.rotate-arrow {
+  font-size: 42px;
+  color: var(--accent-yellow);
+  line-height: 1;
+  animation: rotateArrowSpin 2.2s ease-in-out infinite;
+}
+.rotate-title {
+  font-family: var(--font);
+  font-size: 18px;
+  color: var(--accent-cyan);
+  text-shadow: 3px 3px 0 var(--accent-magenta);
+  letter-spacing: 3px;
+}
+.rotate-sub {
+  font-family: var(--font);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  line-height: 2;
+}
+@keyframes rotateHint {
+  0%, 40%   { transform: rotate(0deg); }
+  55%, 75%  { transform: rotate(-90deg); }
+  100%      { transform: rotate(0deg); }
+}
+@keyframes rotateArrowSpin {
+  0%, 40%   { transform: rotate(0deg); opacity: 1; }
+  55%, 75%  { transform: rotate(-90deg); opacity: 0.4; }
+  100%      { transform: rotate(0deg); opacity: 1; }
+}
+
+/* Show the lock only when the game is active AND the phone is portrait */
+@media (orientation: portrait) and (max-width: 900px) {
+  body.game-active #orientation-lock { display: flex; }
+  body.game-active { overflow: hidden; }
+}
+
+/* ═══════════════════════════════════════════
+   WATERS — portrait / narrow-screen tuning
+   ═══════════════════════════════════════════ */
+@media (max-width: 600px) {
+  #view-waters { padding: 64px 12px 80px; }
+  .waters-container { gap: 20px; }
+
+  .section-title { font-size: 18px; line-height: 1.4; }
+  .waters-subtitle {
+    font-size: 9px;
+    letter-spacing: 2px;
+    line-height: 1.8;
+  }
+
+  /* Hero card */
+  .waters-hero { padding: 24px 14px 16px; gap: 14px; }
+  .hero-badge { font-size: 13px; top: 8px; left: 8px; padding: 3px 7px; }
+  .hero-medal { font-size: 48px; }
+  .hero-name {
+    font-size: 18px;
+    text-shadow: 2px 2px 0 var(--accent-red);
+    line-height: 1.4;
+  }
+  .hero-note { font-size: 9px; line-height: 1.7; max-width: 100%; }
+  .waters-hero .stat-row { grid-template-columns: 76px 1fr 34px; gap: 8px; }
+  .waters-hero .stat-label { font-size: 8px; }
+  .waters-hero .stat-bar { height: 10px; }
+  .waters-hero .stat-value { font-size: 10px; }
+  .hero-overall { padding: 8px 14px; gap: 8px; }
+  .hero-overall .overall-label { font-size: 9px; }
+  .hero-overall .overall-value { font-size: 18px; }
+
+  /* Cards grid -> single column */
+  .waters-list {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .water-card { padding: 18px 12px 12px; gap: 8px; }
+  .water-rank-badge { top: 6px; left: 6px; font-size: 11px; padding: 3px 6px; }
+  .water-medal { font-size: 30px; margin-top: 4px; }
+  .water-name { font-size: 13px; text-shadow: 1px 1px 0 var(--accent-magenta); line-height: 1.4; }
+  .water-note { font-size: 8px; line-height: 1.7; min-height: 28px; }
+
+  .water-card .stat-row { grid-template-columns: 68px 1fr 30px; gap: 7px; }
+  .water-card .stat-label { font-size: 7px; }
+  .water-card .stat-bar { height: 9px; }
+  .water-card .stat-value { font-size: 9px; }
+  .water-overall { padding: 7px 12px; gap: 8px; }
+  .overall-label { font-size: 8px; letter-spacing: 1px; }
+  .overall-value { font-size: 13px; }
+
+  /* Why + back */
+  .waters-why { padding: 14px 14px; }
+  .waters-why-title { font-size: 11px; }
+  .waters-why-body { font-size: 9px; line-height: 1.8; }
+  .waters-top-back {
+    top: 10px;
+    left: 10px;
+    font-size: 10px;
+    padding: 8px 12px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   MOBILE LANDSCAPE — compact layout
+   Triggered for short viewports (phones on their side)
+   ═══════════════════════════════════════════ */
+@media (orientation: landscape) and (max-height: 550px) {
+  /* Menu screen */
+  .menu-container { gap: 14px; padding: 12px; }
+  .title-a { font-size: clamp(20px, 5vw, 32px); }
+  .title-m { font-size: clamp(10px, 2.8vw, 18px); }
+  .menu-subtitle { font-size: clamp(7px, 1.8vw, 10px); letter-spacing: 4px; }
+  .menu-buttons { gap: 10px; margin-top: 6px; }
+  .menu-buttons .pixel-btn {
+    min-width: 180px;
+    font-size: 10px;
+    padding: 10px 20px;
+    letter-spacing: 1px;
+  }
+  .btn-credits-sep { margin-top: 6px; }
+  .new-badge { font-size: 7px; padding: 3px 6px; top: -7px; right: -10px; }
+
+  /* Game HUD */
+  #game-hud { padding: 6px 10px; }
+  .hud-row { gap: 8px; }
+  .hud-item { gap: 6px; }
+  .hud-label { font-size: 8px; letter-spacing: 1px; }
+  .hud-value { font-size: 11px; }
+  .hud-score { font-size: 14px !important; }
+  .hud-time { font-size: 14px !important; }
+  #rockster-stage-row { margin-top: 3px; gap: 6px; }
+  #rockster-stage { font-size: 9px; letter-spacing: 1px; }
+  #rockster-power-row { margin-top: 3px; gap: 6px; min-height: 16px; }
+  .rockster-power-chip { font-size: 7px; padding: 2px 6px; gap: 3px; }
+  .rockster-power-chip .chip-icon { font-size: 10px; }
+
+  /* Complaint bar */
+  #rockster-neighbor {
+    top: 72px;
+    min-width: 260px;
+    max-width: 70%;
+    padding: 6px 12px;
+    gap: 8px;
+  }
+  #rockster-comp-mood { font-size: 24px; }
+  .rockster-comp-title { font-size: 6px; letter-spacing: 1px; }
+  #rockster-comp-label { font-size: 6px; }
+  .rockster-comp-track { height: 10px; }
+
+  /* Volume controls — compact */
+  #rockster-knob-wrap {
+    bottom: 8px;
+    padding: 6px 12px 5px;
+    gap: 3px;
+    border-width: 1px;
+  }
+  .rockster-knob-label { font-size: 8px; letter-spacing: 2px; }
+  .rockster-controls-row { gap: 10px; }
+  #rockster-knob-outer { width: 110px; height: 110px; }
+  #rockster-knob {
+    left: 25px; top: 25px;
+    width: 60px; height: 60px;
+    border-width: 2px;
+  }
+  #rockster-knob-pointer { top: 4px; width: 3px; height: 12px; }
+  #rockster-slider-col { height: 110px; gap: 6px; }
+  #rockster-slider { width: 22px; height: 110px; border-width: 1px; }
+  #rockster-slider::-webkit-slider-thumb,
+  #rockster-slider::-moz-range-thumb { width: 20px; height: 12px; border-width: 1px; }
+  .rockster-slider-marks {
+    height: 100px;
+    font-size: 7px;
+  }
+  .rockster-slider-marks span:first-child { font-size: 8px; }
+  .rockster-knob-value { font-size: 11px; letter-spacing: 1px; }
+  .rockster-knob-hint { font-size: 6px; letter-spacing: 1px; }
+
+  /* Back button */
+  .game-back {
+    bottom: 10px;
+    left: 10px;
+    font-size: 9px;
+    padding: 8px 12px;
+    letter-spacing: 1px;
+  }
+
+  /* Info / Credits / Waters — basic shrink */
+  #view-info, #view-waters { padding: 20px 12px 40px; }
+  .section-title { font-size: clamp(13px, 3.5vw, 18px); }
+  .waters-subtitle { font-size: 8px; }
+  .waters-hero { padding: 20px 14px 14px; gap: 10px; }
+  .hero-medal { font-size: 42px; }
+  .hero-name { font-size: clamp(14px, 3vw, 20px); }
+  .hero-note { font-size: 9px; max-width: 440px; }
+  .waters-list { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+  .water-card { padding: 16px 12px 10px; gap: 8px; }
+  .water-medal { font-size: 28px; }
+  .water-name { font-size: 11px; }
+  .water-note { font-size: 8px; min-height: 24px; }
+  .stat-row { grid-template-columns: 60px 1fr 30px; gap: 6px; }
+  .waters-hero .stat-row { grid-template-columns: 90px 1fr 38px; gap: 10px; }
+  .stat-label { font-size: 7px; }
+  .stat-value { font-size: 8px; }
+  .stat-bar { height: 10px; }
+  .overall-label { font-size: 8px; }
+  .overall-value { font-size: 13px; }
+  .hero-overall .overall-value { font-size: 18px; }
+  .waters-why { padding: 14px 16px; }
+  .waters-why-title { font-size: 10px; }
+  .waters-why-body { font-size: 9px; }
+
+  /* Credits */
+  .credits-name { font-size: clamp(12px, 3vw, 22px); }
+  .credits-label { font-size: 9px; }
+  .credits-item { font-size: 10px; }
+}
+
+/* Even narrower (smaller phones) — extra shrinks */
+@media (orientation: landscape) and (max-height: 430px) {
+  #rockster-neighbor { top: 58px; padding: 4px 10px; }
+  #rockster-knob-outer { width: 94px; height: 94px; }
+  #rockster-knob { left: 21px; top: 21px; width: 52px; height: 52px; }
+  #rockster-slider-col { height: 94px; }
+  #rockster-slider { height: 94px; width: 20px; }
+  .rockster-slider-marks { height: 84px; font-size: 6px; }
+  .rockster-slider-marks span:first-child { font-size: 7px; }
+  .rockster-knob-value { font-size: 10px; }
+  #rockster-knob-wrap { padding: 4px 10px 4px; gap: 2px; }
+}
+
+/* Touch-friendly defaults on any touch device */
+@media (hover: none) {
+  button, .pixel-btn { touch-action: manipulation; }
+  #rockster-slider { touch-action: none; }
 }
