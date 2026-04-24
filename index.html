@@ -18,8 +18,53 @@
     <p class="rotate-sub">BEST EXPERIENCED IN<br>LANDSCAPE MODE</p>
   </div>
 
+  <!-- ═══════════ HOW-TO-PLAY OVERLAY ═══════════ -->
+  <div id="how-to-play" class="hidden">
+    <div class="howto-box">
+      <h2 class="howto-title">🎸 HOW TO ROCK</h2>
+      <p class="howto-sub">90 SECONDS. ONE PARTY. PUSH IT.</p>
+
+      <div class="howto-section">
+        <h3 class="howto-h">🎯 THE GOAL</h3>
+        <p>Rack up the highest score in <strong>90 seconds</strong>. More volume = more points per second, multiplied by your current multiplier (which scales with volume and stage).</p>
+      </div>
+
+      <div class="howto-section">
+        <h3 class="howto-h">💥 HOW YOU LOSE</h3>
+        <ul>
+          <li><strong>Neighbor complaint bar fills up</strong> → cops called → game over.</li>
+          <li><strong>Scoring too low</strong> (below 8 pts/sec) for too long → the party shuts down → game over. No chilling on volume 0!</li>
+        </ul>
+      </div>
+
+      <div class="howto-section">
+        <h3 class="howto-h">🪂 POWER-UPS (click them as they fall)</h3>
+        <ul class="howto-perks">
+          <li><span class="perk-ico perk-weed">🌿</span><strong>WEED</strong> — drops neighbor complaint by <strong>33%</strong> instantly.</li>
+          <li><span class="perk-ico perk-money">💲</span><strong>MONEY</strong> — instant score bonus (250–750 pts).</li>
+          <li><span class="perk-ico perk-mult">x2</span><strong>MULTIPLIER</strong> — boosts your point multiplier for <strong>5 seconds</strong>.</li>
+          <li><span class="perk-ico perk-snow">❄</span><strong>SNOWFLAKE</strong> — freezes the neighbor complaint bar for <strong>5 seconds</strong>.</li>
+        </ul>
+      </div>
+
+      <div class="howto-section howto-tip">
+        <p>💡 Difficulty ramps through 4 stages. Late-game sensitivity spikes are brutal — save your power-ups.</p>
+      </div>
+
+      <button class="pixel-btn howto-start-btn" id="howto-start-btn">🎸 GOT IT, LET'S GO</button>
+      <label class="howto-skip">
+        <input type="checkbox" id="howto-skip"> DON'T SHOW THIS AGAIN
+      </label>
+    </div>
+  </div>
+
   <!-- ═══════════ MENU SCREEN ═══════════ -->
   <div id="view-menu" class="view active">
+    <div class="coin-display menu-coin" id="menu-coin-display"><span class="coin-icon">🪙</span><span id="menu-coin-value">0</span></div>
+    <button class="shop-btn" id="menu-shop-btn" title="Shop">
+      <span class="shop-icon">🏴‍☠️</span>
+      <span class="shop-label">SHOP</span>
+    </button>
     <div class="menu-container">
       <h1 class="menu-title">
         <span class="title-line title-a">ANDREAS</span>
@@ -33,10 +78,13 @@
         </button>
         <button class="pixel-btn btn-info" data-view="info">&#9432; INFO</button>
         <button class="pixel-btn btn-waters" data-view="waters">
-          &#128167; WATERS
+          &#128167; WATER RANKING
           <span class="new-badge">NEW</span>
         </button>
         <button class="pixel-btn btn-credits btn-credits-sep" data-view="credits">&#9733; CREDITS</button>
+        <button class="pixel-btn btn-secret" id="secret-btn">
+          <span id="secret-label">🔒 SECRET &bull; 10,000 🪙</span>
+        </button>
       </div>
     </div>
     <canvas id="menu-bg-canvas"></canvas>
@@ -66,6 +114,10 @@
         <div class="hud-item">
           <span class="hud-label">MULT</span>
           <span class="hud-value" id="rockster-mult">x1.0</span>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">COINS</span>
+          <span class="hud-value hud-coins" id="game-coin-value">0</span>
         </div>
         <div class="hud-item hud-hidden">
           <span class="hud-label">LEVEL</span>
@@ -140,6 +192,18 @@
         <button class="pixel-btn btn-back" id="go-menu-btn">MENU</button>
       </div>
     </div>
+    <!-- Second chance revive overlay -->
+    <div id="revive-overlay" class="overlay hidden">
+      <div class="overlay-box revive-box">
+        <h2 class="revive-title">💫 SECOND CHANCE</h2>
+        <p class="revive-reason" id="revive-reason">POLICE AT THE DOOR</p>
+        <p class="revive-body">USE A SECOND CHANCE?<br/>Complaint resets to 50% &bull; Timer pauses &bull; 2s grace</p>
+        <p class="revive-inventory">YOU HAVE <span id="revive-count">0</span> LEFT</p>
+        <button class="pixel-btn revive-yes" id="revive-yes-btn">💫 REVIVE</button>
+        <button class="pixel-btn btn-back revive-no" id="revive-no-btn">NO, END GAME</button>
+      </div>
+    </div>
+
     <!-- Win overlay (unused for rockster but kept for interface parity) -->
     <div id="game-win" class="overlay hidden">
       <div class="overlay-box win-box">
@@ -204,6 +268,40 @@
         <p class="waters-why-body">Years of hydration research (a.k.a. drinking a lot of water). Intensity, taste, thirst-quenching, and price — scored honestly, ranked ruthlessly. Your mileage may vary.</p>
       </div>
       <button class="pixel-btn btn-back" data-view="menu">&#9664; BACK</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ SECRET PAGE ═══════════ -->
+  <div id="view-secret" class="view">
+    <button class="pixel-btn btn-back secret-top-back" data-view="menu">&#9664; BACK</button>
+    <div class="secret-container">
+      <h2 class="secret-title">🎆 THE SECRET PAGE 🎆</h2>
+      <p class="secret-sub">RESERVED FOR TRUE FANS</p>
+      <div class="secret-placeholder">
+        <div class="secret-placeholder-icon">🏆</div>
+        <p>You've unlocked this page.<br/>Something special will go here soon.</p>
+        <p class="secret-hint">Thanks for sticking around.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SHOP MODAL ═══════════ -->
+  <div id="shop-modal" class="hidden">
+    <div class="shop-box">
+      <div class="shop-head">
+        <h2 class="shop-title">🏴‍☠️ SHOP</h2>
+        <div class="shop-coin"><span class="coin-icon">🪙</span><span id="shop-coin-value">0</span></div>
+        <button class="shop-close" id="shop-close-btn">✕</button>
+      </div>
+      <p class="shop-sub">BUY SPEAKERS TO PUMP YOUR SCORE. LOCK IN A MULTIPLIER FLOOR FOR SURVIVABILITY.</p>
+      <div class="shop-section-title">🔊 SPEAKERS</div>
+      <div class="shop-grid" id="shop-grid-speakers"></div>
+      <div class="shop-section-title">⚡ MULTIPLIER FLOOR</div>
+      <div class="shop-grid" id="shop-grid-mult"></div>
+      <div class="shop-section-title">💫 CONSUMABLES</div>
+      <div class="shop-grid" id="shop-grid-consumables"></div>
+      <div class="shop-section-title">🎨 STAGE BACKDROPS</div>
+      <div class="shop-grid" id="shop-grid-backdrops"></div>
     </div>
   </div>
 

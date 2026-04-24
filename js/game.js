@@ -52,6 +52,11 @@ const Game = (() => {
   let powerMult = 1;         // active multiplier powerup (decays)
   let powerMultTimer = 0;    // seconds remaining
   let freezeTimer = 0;       // seconds remaining on snowflake freeze
+  let coinsEarnedThisRun = 0;
+  let coinMilestoneStep = 100; // every 100 pts = 5 coins
+  let lastCoinMilestone = 0;
+  let ownedSpeakerSprites = []; // array of { item, img, loaded, x, y }
+  let revivedThisRun = false;    // true after a Second Chance has been used in the current run
   let zeroVolumeTimer = 0;   // ticks up while volume === 0
   let sensTimer = null;
   let stageBannerTimer = 0;
@@ -72,6 +77,8 @@ const Game = (() => {
   let speakerLoaded = false;
   let standImg = null;
   let standLoaded = false;
+  let backdropImgs = {}; // { id: { img, loaded } }
+  let currentBackdropId = '';
 
   // Callbacks
   let onGameOver = null;
@@ -105,6 +112,20 @@ const Game = (() => {
     standImg.onload = () => { standLoaded = true; };
     standImg.onerror = () => { standLoaded = false; };
     standImg.src = 'assets/rockster_stand.png';
+  }
+
+  function loadEquippedBackdrop() {
+    if (!window.Shop) return;
+    const id = window.Shop.equippedBackdrop();
+    currentBackdropId = id;
+    if (!id) return;
+    if (backdropImgs[id] && backdropImgs[id].loaded) return;
+    const item = window.Shop.getItem(id);
+    if (!item || !item.sprite) return;
+    const entry = { img: new Image(), loaded: false };
+    entry.img.onload = () => { entry.loaded = true; };
+    entry.img.src = item.sprite;
+    backdropImgs[id] = entry;
   }
 
   /* ─── Knob wiring ─── */
@@ -330,6 +351,22 @@ const Game = (() => {
     '      #      ',
   ];
 
+  const COIN_BITMAP = [
+    '    #####    ',
+    '  ##.....##  ',
+    ' #..##.##..# ',
+    '#...#...#...#',
+    '#..#.....#..#',
+    '#..#..#..#..#',
+    '#..#.....#..#',
+    '#..#..#..#..#',
+    '#..#.....#..#',
+    '#...#...#...#',
+    ' #..##.##..# ',
+    '  ##.....##  ',
+    '    #####    ',
+  ];
+
   function drawBitmap(bitmap, cx, cy, unit, primary, accent) {
     const rows = bitmap.length;
     const cols = bitmap[0].length;
@@ -352,10 +389,11 @@ const Game = (() => {
 
   /* ─── Power-ups ─── */
   const POWERUP_TYPES = [
-    { key: 'weed',  weight: 0.28, bg: '#1b5e20', fg: '#a5d6a7', accent: '#66bb6a' },
-    { key: 'money', weight: 0.28, bg: '#33691e', fg: '#f1c40f', accent: '#f4d03f' },
-    { key: 'mult',  weight: 0.24, bg: '#4a148c', fg: '#ff6ec7', accent: '#e040fb' },
-    { key: 'snow',  weight: 0.20, bg: '#0d3b66', fg: '#b3e5fc', accent: '#4fc3f7' },
+    { key: 'weed',  weight: 0.24, bg: '#1b5e20', fg: '#a5d6a7', accent: '#66bb6a' },
+    { key: 'money', weight: 0.22, bg: '#33691e', fg: '#f1c40f', accent: '#f4d03f' },
+    { key: 'mult',  weight: 0.20, bg: '#4a148c', fg: '#ff6ec7', accent: '#e040fb' },
+    { key: 'snow',  weight: 0.17, bg: '#0d3b66', fg: '#b3e5fc', accent: '#4fc3f7' },
+    { key: 'coin',  weight: 0.17, bg: '#5d4037', fg: '#ffd54f', accent: '#ffeb3b' },
   ];
 
   function pickPowerupType() {
@@ -404,6 +442,11 @@ const Game = (() => {
       spikeTarget = 0;
       spikeMag = 0;
       pushPopup('NEIGHBOR FROZEN 5s', p.x, p.y, '#4fc3f7', 22, 1.6);
+    } else if (p.type === 'coin') {
+      const gained = 150;
+      if (window.Coins) window.Coins.add(gained);
+      coinsEarnedThisRun += gained;
+      pushPopup('+🪙 ' + gained, p.x, p.y, '#ffd54f', 24, 1.6);
     }
     // sparkle burst
     for (let i = 0; i < 12; i++) {
@@ -455,9 +498,29 @@ const Game = (() => {
 
     const intensity = volume / 11;
     multiplier = (1 + intensity * (stage.multCap - 1)) * powerMult;
+    // Multiplier floor from shop upgrades
+    const floor = (window.Shop ? window.Shop.currentMultFloor() : 1);
+    if (multiplier < floor) multiplier = floor;
 
     // Score
     score += volume * multiplier * 2 * dt;
+
+    // Passive points/sec from owned speakers (scales with volume)
+    if (window.Shop) {
+      const owned = window.Shop.ownedSpeakers();
+      if (owned.length) {
+        let bonus = 0;
+        owned.forEach(({ item, count }) => { bonus += item.maxPts * count * intensity; });
+        score += bonus * dt;
+      }
+    }
+
+    // Milestone coin rewards: 5 coins per 100 pts
+    while (score >= lastCoinMilestone + coinMilestoneStep) {
+      lastCoinMilestone += coinMilestoneStep;
+      if (window.Coins) window.Coins.add(5);
+      coinsEarnedThisRun += 5;
+    }
 
     // Snowflake freeze — tick down timer
     if (freezeTimer > 0) freezeTimer = Math.max(0, freezeTimer - dt);
@@ -661,6 +724,20 @@ const Game = (() => {
     ctx.fillStyle = `rgb(${bgShade},${bgShade},${bgShade + 4})`;
     ctx.fillRect(-20, -20, W + 40, H + 40);
 
+    // Equipped backdrop (drawn below everything, dimmed to 35% so stage still reads)
+    if (currentBackdropId && backdropImgs[currentBackdropId] && backdropImgs[currentBackdropId].loaded) {
+      const img = backdropImgs[currentBackdropId].img;
+      // Cover-fit: scale to fill without stretching
+      const iw = img.naturalWidth, ih = img.naturalHeight;
+      const scale = Math.max(W / iw, H / ih);
+      const dw = iw * scale, dh = ih * scale;
+      const dx = (W - dw) / 2, dy = (H - dh) / 2;
+      ctx.save();
+      ctx.globalAlpha = 0.35; // 65% dim per user spec
+      ctx.drawImage(img, dx, dy, dw, dh);
+      ctx.restore();
+    }
+
     // Radial glow behind speaker when loud
     if (running && volume > 5) {
       const grad = ctx.createRadialGradient(W/2, H*0.38, 20, W/2, H*0.38, Math.max(W, H) * 0.55);
@@ -778,6 +855,11 @@ const Game = (() => {
     });
     ctx.globalAlpha = 1;
 
+    // Owned speakers from shop (render on stage)
+    if (running && ownedSpeakerSprites.length) {
+      drawOwnedSpeakers(speakerCenterX, speakerCenterY, speakerBaseW, intensity);
+    }
+
     // Crowd silhouettes at bottom
     if (running && intensity >= 0.15) {
       drawCrowd(intensity);
@@ -894,6 +976,8 @@ const Game = (() => {
       ctx.textBaseline = 'alphabetic';
     } else if (p.type === 'snow') {
       drawBitmap(SNOW_BITMAP, cx, cy, px, type.fg, type.accent);
+    } else if (p.type === 'coin') {
+      drawBitmap(COIN_BITMAP, cx, cy, px, type.fg, type.accent);
     }
 
     // Sparkle ticks on corners
@@ -905,6 +989,89 @@ const Game = (() => {
     ctx.globalAlpha = 1;
 
     ctx.restore();
+  }
+
+  function loadOwnedSpeakers() {
+    ownedSpeakerSprites = [];
+    if (!window.Shop) return;
+    const owned = window.Shop.ownedSpeakers(); // [{ item, count }]
+    // Expand into one entry per unit, then cache the img
+    const imgCache = {};
+    owned.forEach(({ item, count }) => {
+      if (!imgCache[item.id]) {
+        imgCache[item.id] = { img: new Image(), loaded: false };
+        imgCache[item.id].img.onload = () => { imgCache[item.id].loaded = true; };
+        imgCache[item.id].img.src = item.sprite;
+      }
+      for (let i = 0; i < count; i++) {
+        ownedSpeakerSprites.push({ item, imgRef: imgCache[item.id] });
+      }
+    });
+  }
+
+  function drawOwnedSpeakers(speakerCenterX, speakerCenterY, speakerBaseW, intensity) {
+    if (!ownedSpeakerSprites.length) return;
+
+    // Compute each speaker's desired width
+    const entries = ownedSpeakerSprites.map(e => {
+      let w;
+      if (e.item.id === 'rockster_go')         w = speakerBaseW * 0.28;
+      else if (e.item.id === 'rockster_cross') w = speakerBaseW * 0.42;
+      else                                     w = speakerBaseW * 0.58; // rockster_xl2
+      const aspect = e.imgRef.loaded
+        ? (e.imgRef.img.naturalHeight / e.imgRef.img.naturalWidth)
+        : 1.4;
+      return { entry: e, w, h: w * aspect };
+    });
+
+    // Split into left side and right side (alternate by tier)
+    const left = [], right = [];
+    entries.forEach((e, i) => (i % 2 === 0 ? left : right).push(e));
+
+    // Main speaker bounds — don't overlap these (reserve center column)
+    const mainHalfW = speakerBaseW / 2;
+    const margin = 16;
+    const floorY = speakerCenterY + speakerBaseW * 0.75;
+
+    // Helper: place speakers on a side, respecting canvas bounds, with a row overflow
+    function placeSide(arr, direction /* -1 or +1 */) {
+      let cursorX = speakerCenterX + direction * (mainHalfW + margin);
+      let rowY = floorY;
+      let rowHeightMax = 0;
+      arr.forEach((e, idx) => {
+        const w = e.w, h = e.h;
+        // Next slot position (edge-of-sprite)
+        const slotCenter = cursorX + direction * (w / 2);
+        const slotLeft = slotCenter - w / 2;
+        const slotRight = slotCenter + w / 2;
+        // Would overflow canvas? Wrap up to a new row above
+        const overflow = direction < 0 ? slotLeft < 8 : slotRight > W - 8;
+        if (overflow && idx > 0) {
+          rowY -= rowHeightMax + margin * 0.5;
+          rowHeightMax = 0;
+          cursorX = speakerCenterX + direction * (mainHalfW + margin);
+        }
+        // Clamp so we never fully escape — if still overflowing, skip this one
+        const drawCenterX = Math.max(w / 2 + 4, Math.min(W - w / 2 - 4,
+          cursorX + direction * (w / 2)));
+        const drawCenterY = rowY - h / 2;
+        e.drawX = drawCenterX;
+        e.drawY = drawCenterY;
+        rowHeightMax = Math.max(rowHeightMax, h);
+        cursorX = drawCenterX + direction * (w / 2 + margin);
+      });
+    }
+
+    placeSide(left, -1);
+    placeSide(right, +1);
+
+    // Actually draw
+    entries.forEach((e, i) => {
+      if (!e.entry.imgRef.loaded || e.drawX == null) return;
+      const pulse = 1 + (intensity > 0.4 ? Math.sin(crowdPhase * 7 + i) * 0.04 * intensity : 0);
+      const dw = e.w * pulse, dh = e.h * pulse;
+      ctx.drawImage(e.entry.imgRef.img, e.drawX - dw / 2, e.drawY - dh / 2, dw, dh);
+    });
   }
 
   function drawStandSprite(cx, cy, w, h, intensity) {
@@ -1029,6 +1196,11 @@ const Game = (() => {
     powerMultTimer = 0;
     freezeTimer = 0;
     zeroVolumeTimer = 0;
+    coinsEarnedThisRun = 0;
+    lastCoinMilestone = 0;
+    revivedThisRun = false;
+    loadOwnedSpeakers();
+    loadEquippedBackdrop();
     sparks = [];
     scorePopups = [];
     powerups = [];
@@ -1058,7 +1230,55 @@ const Game = (() => {
   function pause()   { paused = true; }
   function unpause() { paused = false; lastTs = 0; }
 
+  function maybeOfferRevive(reason) {
+    if (!window.Shop) return false;
+    if (revivedThisRun) return false;
+    if (window.Shop.count('second_chance') <= 0) return false;
+    // Pause game and show revive overlay
+    paused = true;
+    const overlay = document.getElementById('revive-overlay');
+    const reasonEl = document.getElementById('revive-reason');
+    const countEl = document.getElementById('revive-count');
+    if (reasonEl) reasonEl.textContent = reason;
+    if (countEl)  countEl.textContent = window.Shop.count('second_chance');
+    if (overlay)  overlay.classList.remove('hidden');
+    return true;
+  }
+
+  function performRevive() {
+    if (!window.Shop.useOne('second_chance')) return;
+    revivedThisRun = true;
+    complaint = 0.5;
+    displayComplaint = 0.5;
+    spikeMag = 0; spikeTarget = 0;
+    zeroVolumeTimer = 0;
+    // Small grace period before pressure resumes
+    freezeTimer = Math.max(freezeTimer, 2);
+    paused = false;
+    lastTs = 0; // reset dt so we don't apply the pause delta
+    const overlay = document.getElementById('revive-overlay');
+    if (overlay) overlay.classList.add('hidden');
+  }
+
+  function declineRevive() {
+    const overlay = document.getElementById('revive-overlay');
+    if (overlay) overlay.classList.add('hidden');
+    paused = false;
+    lastTs = 0;
+    // Now actually end the game
+    finalEndGame(window._roksterReviveDeclineReason || 'police');
+    window._roksterReviveDeclineReason = null;
+  }
+
   function endGame() {
+    if (maybeOfferRevive('POLICE AT THE DOOR')) {
+      window._roksterReviveDeclineReason = 'police';
+      return;
+    }
+    finalEndGame('police');
+  }
+
+  function finalEndGame(reason) {
     running = false;
     clearTimeout(sensTimer);
     const final = Math.floor(score);
@@ -1066,18 +1286,29 @@ const Game = (() => {
       highScore = final;
       localStorage.setItem('rockster_hi', String(highScore));
     }
+    // Swap game-over title based on reason
+    const over = document.getElementById('game-over');
+    const title = over && over.querySelector('.game-over-title');
+    if (title) {
+      title.textContent = reason === 'party' ? 'PARTY OVER' : '🚓 POLICE!';
+      setTimeout(() => { if (title) title.textContent = '🚓 POLICE!'; }, 3000);
+    }
     if (onGameOver) onGameOver(final, stageIdx);
   }
 
   function partyOver() {
-    // Different loss reason — reuse game-over screen but tag it
-    const over = document.getElementById('game-over');
-    const title = over && over.querySelector('.game-over-title');
-    if (title) title.textContent = 'PARTY OVER';
-    endGame();
-    // restore title after a moment so retry shows POLICE again
-    setTimeout(() => { if (title) title.textContent = '🚓 POLICE!'; }, 3000);
+    if (maybeOfferRevive('PARTY SHUT DOWN')) {
+      window._roksterReviveDeclineReason = 'party';
+      return;
+    }
+    finalEndGame('party');
   }
+
+  // Expose revive handlers
+  window._roksterRevive = {
+    accept: performRevive,
+    decline: declineRevive,
+  };
 
   function timeUp() {
     running = false;
