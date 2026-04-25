@@ -252,37 +252,6 @@ html, body {
   font-size: 18px;
   color: var(--text-white);
 }
-.hud-hp-text {
-  font-size: 8px;
-  color: var(--accent-green);
-  min-width: 30px;
-  text-align: right;
-}
-
-/* Health bar */
-.health-bar-outer {
-  width: clamp(80px, 20vw, 200px);
-  height: 14px;
-  background: #333;
-  position: relative;
-  box-shadow:
-    -2px 0 0 0 var(--text-white),
-     2px 0 0 0 var(--text-white),
-     0 -2px 0 0 var(--text-white),
-     0  2px 0 0 var(--text-white);
-}
-.health-bar-inner {
-  height: 100%;
-  width: 100%;
-  background: var(--accent-green);
-  transition: width 0.3s, background 0.3s;
-}
-.health-bar-inner.low {
-  background: var(--accent-red);
-}
-.health-bar-inner.med {
-  background: var(--accent-orange);
-}
 
 /* Game back button */
 .game-back {
@@ -389,6 +358,17 @@ html, body {
   color: #b3e5fc;
   animation: chipFrost 0.8s ease-in-out infinite alternate;
 }
+#rockster-power-extend {
+  border-color: #ff6ec7;
+  color: #ff6ec7;
+  animation: chipExtend 0.6s ease-in-out infinite alternate;
+}
+#rockster-power-extend.extend-warning {
+  animation: chipExtendWarn 0.25s ease-in-out infinite alternate;
+  border-color: #f00;
+  color: #fff;
+  background: rgba(180, 0, 50, 0.6);
+}
 @keyframes chipPulse {
   0%   { box-shadow: 0 0 6px  #e040fb; }
   100% { box-shadow: 0 0 14px #ff6ec7; }
@@ -396,6 +376,14 @@ html, body {
 @keyframes chipFrost {
   0%   { box-shadow: 0 0 6px  #4fc3f7; }
   100% { box-shadow: 0 0 14px #b3e5fc; }
+}
+@keyframes chipExtend {
+  0%   { box-shadow: 0 0 6px  #ff6ec7; }
+  100% { box-shadow: 0 0 14px #ff79b3; }
+}
+@keyframes chipExtendWarn {
+  0%   { box-shadow: 0 0 8px  #f00; transform: scale(1); }
+  100% { box-shadow: 0 0 22px #fff; transform: scale(1.08); }
 }
 
 /* Complaint bar (neighbor panel) */
@@ -440,12 +428,45 @@ html, body {
   height: 16px;
   background: #111;
   border: 2px solid #333;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.rockster-comp-track.extended {
+  border-color: #ff6ec7;
+  box-shadow: 0 0 8px #ff6ec7;
 }
 .rockster-comp-bar {
   height: 100%;
   width: 0%;
   background: #4CAF50;
   transition: width 0.06s linear, background 0.3s;
+  position: relative;
+  z-index: 2;
+}
+.rockster-comp-extension {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 0%;
+  background: repeating-linear-gradient(
+    -45deg,
+    #ff6ec7 0,
+    #ff6ec7 6px,
+    #b03371 6px,
+    #b03371 12px
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+.rockster-comp-extension.hidden { display: none; }
+.rockster-comp-extension.about-to-collapse {
+  animation: extensionWarn 0.35s ease-in-out infinite alternate;
+}
+@keyframes extensionWarn {
+  0%   { opacity: 0.55; }
+  100% { opacity: 1;    box-shadow: inset 0 0 12px #fff; }
 }
 
 /* Volume knob */
@@ -1170,8 +1191,6 @@ html, body {
   }
   .hud-label { font-size: 6px; }
   .hud-value { font-size: 9px; }
-  .hud-hp-text { font-size: 6px; }
-  .health-bar-outer { height: 10px; }
   .game-back { font-size: 7px; padding: 6px 10px; }
   .card-header { padding: 12px 12px; }
   .card-body-inner { line-height: 1.8; }
@@ -1429,6 +1448,62 @@ html, body {
   opacity: 0.8;
 }
 
+/* Cheat console at the bottom of the shop */
+.shop-cheat {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 2px dashed #333;
+  text-align: center;
+}
+.shop-cheat-prompt {
+  font-family: var(--font);
+  font-size: 9px;
+  color: #555;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+.shop-cheat-row {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+.shop-cheat-input {
+  font-family: var(--font);
+  font-size: 11px;
+  background: #111;
+  color: var(--accent-green);
+  border: 2px solid #333;
+  padding: 10px 14px;
+  letter-spacing: 3px;
+  text-align: center;
+  outline: none;
+  width: 180px;
+  text-transform: uppercase;
+}
+.shop-cheat-input:focus { border-color: var(--accent-green); }
+.shop-cheat-submit {
+  font-size: 10px;
+  padding: 10px 14px;
+  background: #222;
+  color: var(--accent-green);
+  border: 2px solid var(--accent-green);
+  letter-spacing: 2px;
+}
+.shop-cheat-submit:hover {
+  background: var(--accent-green);
+  color: var(--bg-dark);
+}
+.shop-cheat-result {
+  margin-top: 12px;
+  font-family: var(--font);
+  font-size: 10px;
+  letter-spacing: 1px;
+  line-height: 1.6;
+}
+.shop-cheat-result.hidden { display: none; }
+.cheat-ok  { color: var(--accent-yellow); text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+.cheat-bad { color: var(--accent-red);    font-style: italic; }
+
 /* Mobile full-screen shop */
 @media (max-width: 700px) {
   #shop-modal { padding: 0; }
@@ -1485,7 +1560,7 @@ html, body {
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 80px;
   align-items: center;
 }
 .secret-title {
@@ -1502,30 +1577,209 @@ html, body {
   color: var(--accent-cyan);
   letter-spacing: 6px;
 }
-.secret-placeholder {
+.secret-welcome {
+  font-family: var(--font);
+  font-size: clamp(8px, 1.5vw, 12px);
+  color: var(--text-white);
+  line-height: 2.2;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Mood prompt */
+.secret-mood {
   background: rgba(0, 0, 0, 0.5);
-  padding: 40px 30px;
+  padding: 26px 24px;
   border: 3px solid var(--accent-magenta);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 18px;
+  gap: 16px;
   width: 100%;
-  max-width: 500px;
+  max-width: 540px;
 }
-.secret-placeholder-icon {
-  font-size: 72px;
-  line-height: 1;
-}
-.secret-placeholder p {
+.secret-mood-title {
   font-family: var(--font);
-  font-size: clamp(8px, 1.4vw, 11px);
-  color: var(--text-white);
-  line-height: 2.2;
+  font-size: clamp(13px, 2.5vw, 18px);
+  color: var(--accent-yellow);
+  letter-spacing: 3px;
+  text-shadow: 2px 2px 0 var(--accent-red);
 }
-.secret-hint {
-  color: var(--accent-yellow) !important;
+.secret-mood-buttons {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.mood-good {
+  background: var(--accent-green) !important;
+  color: var(--bg-dark) !important;
+  font-size: clamp(10px, 1.6vw, 13px);
+  padding: 14px 26px;
+}
+.mood-good:hover { background: var(--accent-yellow) !important; }
+.mood-bad {
+  background: var(--accent-red) !important;
+  color: var(--text-white) !important;
+  font-size: clamp(10px, 1.6vw, 13px);
+  padding: 14px 26px;
+}
+.mood-bad:hover { background: var(--accent-magenta) !important; }
+.secret-mood-reply {
+  font-family: var(--font);
+  font-size: clamp(9px, 1.4vw, 12px);
+  letter-spacing: 1px;
+  line-height: 1.8;
+  text-align: center;
+  margin-top: 4px;
+  animation: moodReplyIn 0.3s ease-out;
+}
+.secret-mood-reply.hidden { display: none; }
+.mood-good-reply { color: var(--accent-green); }
+.mood-bad-reply  { color: var(--accent-red); font-style: italic; }
+@keyframes moodReplyIn {
+  0%   { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Section title shared */
+.secret-section-title {
+  font-family: var(--font);
+  font-size: clamp(11px, 1.8vw, 14px);
+  color: var(--accent-cyan);
+  letter-spacing: 3px;
+  margin-bottom: 14px;
+  text-shadow: 2px 2px 0 var(--accent-magenta);
+}
+
+/* Carousel */
+.secret-carousel {
+  width: 100%;
+  max-width: 720px;
+  text-align: center;
+}
+.carousel-frame {
+  position: relative;
+  background: #000;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    -4px 0 0 0 var(--accent-yellow),
+     4px 0 0 0 var(--accent-yellow),
+     0 -4px 0 0 var(--accent-yellow),
+     0  4px 0 0 var(--accent-yellow);
+}
+.carousel-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  max-height: 70vh;
+  overflow: hidden;
+  background: #050505;
+}
+.carousel-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carousel-slide.active { opacity: 1; }
+.carousel-slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: auto;
+}
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--accent-yellow);
+  border: 2px solid var(--accent-yellow);
+  width: 40px;
+  height: 40px;
+  font-size: 14px;
+  font-family: var(--font);
+  cursor: pointer;
+  z-index: 5;
+  transition: background 0.15s, color 0.15s;
+}
+.carousel-arrow:hover {
+  background: var(--accent-yellow);
+  color: var(--bg-dark);
+}
+.carousel-prev { left: 14px; }
+.carousel-next { right: 14px; }
+.carousel-dots {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 14px;
+}
+.carousel-dot {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--accent-yellow);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s;
+}
+.carousel-dot.active { background: var(--accent-yellow); }
+.carousel-dot:hover { background: var(--accent-magenta); }
+
+/* Pi — breaks out of the centered container to span full viewport,
+   while staying perfectly centered with no overflow. */
+.secret-pi {
+  background: rgba(0, 0, 0, 0.55);
+  padding: 32px 24px;
+  border: 3px dashed var(--accent-cyan);
+  /* Use 100% of the parent (.view) instead of 100vw to avoid scrollbar offsets */
+  width: 100%;
+  position: relative;
+  /* Break out of the .secret-container's max-width 680px */
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  width: 100vw;
+  max-width: 100vw;
+  text-align: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.secret-pi-digits {
+  font-family: var(--font);
+  font-size: clamp(28px, 5vw, 72px);
+  color: var(--accent-yellow);
+  letter-spacing: 2px;
+  line-height: 1.4;
+  /* Wrap cleanly on narrow screens, never overflow the box */
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  text-shadow: 3px 3px 0 var(--accent-magenta), 0 0 18px rgba(255, 215, 0, 0.5);
+  margin: 0 auto 18px;
+  max-width: 100%;
+  padding: 0;
+  box-sizing: border-box;
+}
+.secret-pi-note {
+  font-family: var(--font);
+  font-size: clamp(9px, 1.4vw, 13px);
+  color: var(--text-dim);
   font-style: italic;
+}
+
+@media (max-width: 600px) {
+  .carousel-arrow { width: 32px; height: 32px; font-size: 12px; }
+  .carousel-prev { left: 8px; }
+  .carousel-next { right: 8px; }
+  .secret-mood-buttons { gap: 10px; }
 }
 .secret-top-back {
   position: fixed;

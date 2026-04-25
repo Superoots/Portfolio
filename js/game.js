@@ -52,6 +52,8 @@ const Game = (() => {
   let powerMult = 1;         // active multiplier powerup (decays)
   let powerMultTimer = 0;    // seconds remaining
   let freezeTimer = 0;       // seconds remaining on snowflake freeze
+  let extendBonus = 0;       // extra range above 1.0 (e.g. 0.33 means 1.33 limit)
+  let extendTimer = 0;       // seconds remaining on plus power-up
   let coinsEarnedThisRun = 0;
   let coinMilestoneStep = 100; // every 100 pts = 5 coins
   let lastCoinMilestone = 0;
@@ -87,7 +89,8 @@ const Game = (() => {
 
   // DOM refs populated by main.js bootstrap
   let knobEl, knobPointerEl, volValEl, compBarEl, compLabelEl, compMoodEl, multiplierEl, scoreEl, stageLabelEl, timeEl;
-  let powerMultChip, powerFreezeChip;
+  let powerMultChip, powerFreezeChip, powerExtendChip;
+  let compTrackEl, compExtensionEl;
 
   /* ─── Sizing ─── */
   let W, H, dpr;
@@ -367,6 +370,22 @@ const Game = (() => {
     '    #####    ',
   ];
 
+  const PLUS_BITMAP = [
+    '             ',
+    '     ###     ',
+    '     #.#     ',
+    '     #.#     ',
+    '     #.#     ',
+    ' ########### ',
+    ' #.........# ',
+    ' ########### ',
+    '     #.#     ',
+    '     #.#     ',
+    '     #.#     ',
+    '     ###     ',
+    '             ',
+  ];
+
   function drawBitmap(bitmap, cx, cy, unit, primary, accent) {
     const rows = bitmap.length;
     const cols = bitmap[0].length;
@@ -389,11 +408,12 @@ const Game = (() => {
 
   /* ─── Power-ups ─── */
   const POWERUP_TYPES = [
-    { key: 'weed',  weight: 0.24, bg: '#1b5e20', fg: '#a5d6a7', accent: '#66bb6a' },
-    { key: 'money', weight: 0.22, bg: '#33691e', fg: '#f1c40f', accent: '#f4d03f' },
-    { key: 'mult',  weight: 0.20, bg: '#4a148c', fg: '#ff6ec7', accent: '#e040fb' },
-    { key: 'snow',  weight: 0.17, bg: '#0d3b66', fg: '#b3e5fc', accent: '#4fc3f7' },
-    { key: 'coin',  weight: 0.17, bg: '#5d4037', fg: '#ffd54f', accent: '#ffeb3b' },
+    { key: 'weed',  weight: 0.20, bg: '#1b5e20', fg: '#a5d6a7', accent: '#66bb6a' },
+    { key: 'money', weight: 0.18, bg: '#33691e', fg: '#f1c40f', accent: '#f4d03f' },
+    { key: 'mult',  weight: 0.17, bg: '#4a148c', fg: '#ff6ec7', accent: '#e040fb' },
+    { key: 'snow',  weight: 0.15, bg: '#0d3b66', fg: '#b3e5fc', accent: '#4fc3f7' },
+    { key: 'coin',  weight: 0.15, bg: '#5d4037', fg: '#ffd54f', accent: '#ffeb3b' },
+    { key: 'plus',  weight: 0.15, bg: '#5d1f3f', fg: '#ff6ec7', accent: '#ff79b3' },
   ];
 
   function pickPowerupType() {
@@ -447,6 +467,10 @@ const Game = (() => {
       if (window.Coins) window.Coins.add(gained);
       coinsEarnedThisRun += gained;
       pushPopup('+🪙 ' + gained, p.x, p.y, '#ffd54f', 24, 1.6);
+    } else if (p.type === 'plus') {
+      extendBonus = 0.33;
+      extendTimer = 6;
+      pushPopup('BAR EXTENDED +33% (6s)', p.x, p.y, '#ff6ec7', 22, 1.6);
     }
     // sparkle burst
     for (let i = 0; i < 12; i++) {
@@ -539,7 +563,8 @@ const Game = (() => {
         change -= 0.07 * dt * drainMult * stage.drainMul;
       }
     }
-    complaint = Math.max(0, Math.min(1, complaint + change));
+    const complaintMax = 1 + extendBonus;
+    complaint = Math.max(0, Math.min(complaintMax, complaint + change));
 
     // Slow spike swells — set a target, ease toward it so player has time to react
     if (freezeTimer <= 0 && timeElapsed >= nextSpikeAt) {
@@ -562,14 +587,34 @@ const Game = (() => {
     } else {
       const jitterAmp = 0.08 + intensity * 0.22 + (sensitivity > 1.5 ? 0.08 : 0);
       const jitter = (Math.random() - 0.5) * 2 * jitterAmp;
-      target = Math.max(0, Math.min(1, complaint + spikeMag + jitter));
+      target = Math.max(0, Math.min(complaintMax, complaint + spikeMag + jitter));
     }
     // Fast-follow so jitter reads as real shake, not smoothed mush
     displayComplaint += (target - displayComplaint) * Math.min(1, dt * 30);
 
-    if (complaint >= 1) {
+    // Lose check: hit current max (1.0 normally, 1.33 while extended)
+    if (complaint >= complaintMax) {
       endGame();
       return;
+    }
+
+    // Bar extension (PLUS power-up) — collapse when timer ends
+    if (extendTimer > 0) {
+      extendTimer -= dt;
+      if (extendTimer <= 0) {
+        extendTimer = 0;
+        if (complaint > 1) {
+          // Player was in the danger zone when extension collapsed → instant lose
+          extendBonus = 0;
+          complaint = 1;
+          displayComplaint = 1;
+          // Special game-over reason
+          finalEndGameByExtensionCollapse();
+          return;
+        }
+        // Safe — extension shrinks back, complaint stays where it is (already <= 1)
+        extendBonus = 0;
+      }
     }
 
     // Power-up multiplier decay
@@ -662,14 +707,33 @@ const Game = (() => {
         multiplierEl.classList.remove('rockster-mult-hot');
       }
     }
-    if (compBarEl) compBarEl.style.width = (displayComplaint * 100).toFixed(1) + '%';
+    const max = 1 + extendBonus;
+    if (compBarEl) compBarEl.style.width = ((displayComplaint / max) * 100).toFixed(1) + '%';
     const mood = getNeighborMood(complaint);
     if (compBarEl) {
       if (freezeTimer > 0) {
         compBarEl.style.background = 'linear-gradient(90deg, #4fc3f7, #b3e5fc)';
+      } else if (complaint > 1) {
+        // Inside the danger extension zone — vivid pink/magenta
+        compBarEl.style.background = 'linear-gradient(90deg, #f44, #ff6ec7)';
       } else {
         compBarEl.style.background = `linear-gradient(90deg, ${mood.color}, ${complaint > 0.7 ? '#f00' : mood.color})`;
       }
+    }
+    if (compExtensionEl) {
+      if (extendBonus > 0) {
+        const extPct = (extendBonus / max) * 100;
+        compExtensionEl.style.width = extPct.toFixed(1) + '%';
+        compExtensionEl.classList.remove('hidden');
+        const flash = extendTimer < 2;
+        compExtensionEl.classList.toggle('about-to-collapse', flash);
+      } else {
+        compExtensionEl.style.width = '0%';
+        compExtensionEl.classList.add('hidden');
+      }
+    }
+    if (compTrackEl) {
+      compTrackEl.classList.toggle('extended', extendBonus > 0);
     }
     if (compMoodEl) {
       compMoodEl.textContent = freezeTimer > 0 ? '🥶' : mood.emoji;
@@ -706,6 +770,15 @@ const Game = (() => {
         powerFreezeChip.querySelector('.chip-time').textContent = freezeTimer.toFixed(1) + 's';
       } else {
         powerFreezeChip.classList.add('hidden');
+      }
+    }
+    if (powerExtendChip) {
+      if (extendTimer > 0) {
+        powerExtendChip.classList.remove('hidden');
+        powerExtendChip.querySelector('.chip-time').textContent = extendTimer.toFixed(1) + 's';
+        powerExtendChip.classList.toggle('extend-warning', extendTimer < 2);
+      } else {
+        powerExtendChip.classList.add('hidden');
       }
     }
   }
@@ -978,6 +1051,8 @@ const Game = (() => {
       drawBitmap(SNOW_BITMAP, cx, cy, px, type.fg, type.accent);
     } else if (p.type === 'coin') {
       drawBitmap(COIN_BITMAP, cx, cy, px, type.fg, type.accent);
+    } else if (p.type === 'plus') {
+      drawBitmap(PLUS_BITMAP, cx, cy, px, type.fg, type.accent);
     }
 
     // Sparkle ticks on corners
@@ -1195,6 +1270,8 @@ const Game = (() => {
     powerMult = 1;
     powerMultTimer = 0;
     freezeTimer = 0;
+    extendBonus = 0;
+    extendTimer = 0;
     zeroVolumeTimer = 0;
     coinsEarnedThisRun = 0;
     lastCoinMilestone = 0;
@@ -1304,6 +1381,24 @@ const Game = (() => {
     finalEndGame('party');
   }
 
+  function finalEndGameByExtensionCollapse() {
+    // Bar extension collapsed while complaint was in the bonus zone — no revive offered
+    running = false;
+    clearTimeout(sensTimer);
+    const final = Math.floor(score);
+    if (final > highScore) {
+      highScore = final;
+      localStorage.setItem('rockster_hi', String(highScore));
+    }
+    const over = document.getElementById('game-over');
+    const title = over && over.querySelector('.game-over-title');
+    if (title) {
+      title.textContent = 'BAR COLLAPSED!';
+      setTimeout(() => { if (title) title.textContent = '🚓 POLICE!'; }, 3000);
+    }
+    if (onGameOver) onGameOver(final, stageIdx);
+  }
+
   // Expose revive handlers
   window._roksterRevive = {
     accept: performRevive,
@@ -1345,6 +1440,9 @@ const Game = (() => {
     timeEl        = document.getElementById('rockster-time');
     powerMultChip   = document.getElementById('rockster-power-mult');
     powerFreezeChip = document.getElementById('rockster-power-freeze');
+    powerExtendChip = document.getElementById('rockster-power-extend');
+    compTrackEl     = document.getElementById('rockster-comp-track');
+    compExtensionEl = document.getElementById('rockster-comp-extension');
 
     preloadSpeaker();
     attachKnob();

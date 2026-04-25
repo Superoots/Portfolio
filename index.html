@@ -96,13 +96,6 @@
     <!-- HUD overlay -->
     <div id="game-hud">
       <div class="hud-row">
-        <div class="hud-item hud-hidden">
-          <span class="hud-label">HP</span>
-          <div class="health-bar-outer">
-            <div class="health-bar-inner" id="health-bar"></div>
-          </div>
-          <span class="hud-hp-text" id="hp-text">100</span>
-        </div>
         <div class="hud-item">
           <span class="hud-label">TIME</span>
           <span class="hud-value hud-time" id="rockster-time">1:30</span>
@@ -119,10 +112,6 @@
           <span class="hud-label">COINS</span>
           <span class="hud-value hud-coins" id="game-coin-value">0</span>
         </div>
-        <div class="hud-item hud-hidden">
-          <span class="hud-label">LEVEL</span>
-          <span class="hud-value" id="level-display">1</span>
-        </div>
       </div>
       <div id="rockster-stage-row">
         <span class="hud-label">STAGE:</span>
@@ -131,6 +120,7 @@
       <div id="rockster-power-row">
         <span class="rockster-power-chip hidden" id="rockster-power-mult"><span class="chip-icon">⚡</span><span class="chip-label">MULT</span><span class="chip-time">5.0s</span></span>
         <span class="rockster-power-chip hidden" id="rockster-power-freeze"><span class="chip-icon">❄</span><span class="chip-label">FREEZE</span><span class="chip-time">5.0s</span></span>
+        <span class="rockster-power-chip hidden" id="rockster-power-extend"><span class="chip-icon">+</span><span class="chip-label">+33%</span><span class="chip-time">6.0s</span></span>
       </div>
     </div>
 
@@ -142,7 +132,8 @@
           <span class="rockster-comp-title">NEIGHBOR COMPLAINT</span>
           <span id="rockster-comp-label">NORMAL</span>
         </div>
-        <div class="rockster-comp-track">
+        <div class="rockster-comp-track" id="rockster-comp-track">
+          <div class="rockster-comp-extension" id="rockster-comp-extension"></div>
           <div class="rockster-comp-bar" id="rockster-comp-bar"></div>
         </div>
       </div>
@@ -275,12 +266,38 @@
   <div id="view-secret" class="view">
     <button class="pixel-btn btn-back secret-top-back" data-view="menu">&#9664; BACK</button>
     <div class="secret-container">
-      <h2 class="secret-title">🎆 THE SECRET PAGE 🎆</h2>
-      <p class="secret-sub">RESERVED FOR TRUE FANS</p>
-      <div class="secret-placeholder">
-        <div class="secret-placeholder-icon">🏆</div>
-        <p>You've unlocked this page.<br/>Something special will go here soon.</p>
-        <p class="secret-hint">Thanks for sticking around.</p>
+      <h2 class="secret-title">🎆 YOU MADE IT 🎆</h2>
+      <p class="secret-welcome">
+        Wow, you made it here. Either you played a lot — or you edited the localStorage value 😉<br/>
+        Anyways, I'm glad you're here.
+      </p>
+
+      <!-- Mood prompt -->
+      <div class="secret-mood">
+        <h3 class="secret-mood-title">HOW ARE YOU TODAY?</h3>
+        <div class="secret-mood-buttons">
+          <button class="pixel-btn mood-good" id="mood-good-btn">😎 GOOD</button>
+          <button class="pixel-btn mood-bad"  id="mood-bad-btn">😩 BAD</button>
+        </div>
+        <p class="secret-mood-reply hidden" id="mood-reply"></p>
+      </div>
+
+      <!-- Photo carousel -->
+      <div class="secret-carousel">
+        <h3 class="secret-section-title">📸 SOME MOMENTS</h3>
+        <div class="carousel-frame" id="carousel-frame">
+          <button class="carousel-arrow carousel-prev" id="carousel-prev" aria-label="previous">&#9664;</button>
+          <div class="carousel-stage" id="carousel-stage"></div>
+          <button class="carousel-arrow carousel-next" id="carousel-next" aria-label="next">&#9654;</button>
+        </div>
+        <div class="carousel-dots" id="carousel-dots"></div>
+      </div>
+
+      <!-- Pi -->
+      <div class="secret-pi">
+        <h3 class="secret-section-title">π — 53 DIGITS BY HEART</h3>
+        <p class="secret-pi-digits">3.14159265358979323846264338327950288419716939937510582</p>
+        <p class="secret-pi-note">Yes, really. Find me and I'll recite them.</p>
       </div>
     </div>
   </div>
@@ -302,6 +319,16 @@
       <div class="shop-grid" id="shop-grid-consumables"></div>
       <div class="shop-section-title">🎨 STAGE BACKDROPS</div>
       <div class="shop-grid" id="shop-grid-backdrops"></div>
+
+      <!-- Cheat console (very bottom — for the curious) -->
+      <div class="shop-cheat">
+        <div class="shop-cheat-prompt">&gt;_ TYPE A CODE (IF YOU KNOW ONE)</div>
+        <div class="shop-cheat-row">
+          <input type="text" id="shop-cheat-input" class="shop-cheat-input" placeholder="???" autocomplete="off" maxlength="32">
+          <button class="pixel-btn shop-cheat-submit" id="shop-cheat-submit">ENTER</button>
+        </div>
+        <div class="shop-cheat-result hidden" id="shop-cheat-result"></div>
+      </div>
     </div>
   </div>
 

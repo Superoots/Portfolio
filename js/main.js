@@ -26,13 +26,13 @@
       // Speakers — stackable, cap 4
       { id: 'rockster_go',    category: 'speaker', cost: 500,  cap: 4, name: 'ROCKSTER GO',    desc: 'Tiny speaker. Max +3 pts/s at full volume. Stack up to 4.',  maxPts: 3,  sprite: 'assets/rockster_go.png' },
       { id: 'rockster_cross', category: 'speaker', cost: 1000, cap: 4, name: 'ROCKSTER CROSS', desc: 'Mid-size speaker. Max +8 pts/s. Stack up to 4.',             maxPts: 8,  sprite: 'assets/rockster_cross.png' },
-      { id: 'rockster_xl2',   category: 'speaker', cost: 2500, cap: 4, name: 'ROCKSTER XL+',   desc: 'Another full XL. Max +15 pts/s. Stack up to 4.',             maxPts: 15, sprite: 'assets/rockster.png' },
+      { id: 'rockster_xl2',   category: 'speaker', cost: 2500, cap: 4, name: 'ROCKSTER XL+',   desc: 'Another full XL. Max +25 pts/s. Stack up to 4.',             maxPts: 25, sprite: 'assets/rockster.png' },
       // Multiplier floor — tier, cap 1, lower tiers auto-superseded
       { id: 'mult_floor_2',   category: 'mult_floor', cost: 1500, cap: 1, name: 'MULTIPLIER FLOOR x2.0', desc: 'Your multiplier never drops below 2.0.', floor: 2.0 },
       { id: 'mult_floor_3',   category: 'mult_floor', cost: 3500, cap: 1, name: 'MULTIPLIER FLOOR x3.0', desc: 'Your multiplier never drops below 3.0.', floor: 3.0 },
       { id: 'mult_floor_4',   category: 'mult_floor', cost: 5000, cap: 1, name: 'MULTIPLIER FLOOR x4.0', desc: 'Your multiplier never drops below 4.0.', floor: 4.0 },
       // Consumable — Second Chance (stack up to 8)
-      { id: 'second_chance',  category: 'consumable', cost: 2000, cap: 8, name: 'SECOND CHANCE', desc: 'Revive on game over with complaint at 50%. Timer pauses. One use per purchase. Stack up to 8.' },
+      { id: 'second_chance',  category: 'consumable', cost: 2000, cap: 3, name: 'SECOND CHANCE', desc: 'Revive on game over with complaint at 50%. Timer pauses. One use per purchase. Stack up to 3.' },
       // Backdrops — own once, equip from shop
       { id: 'backdrop_party',        category: 'backdrop', cost: 300, cap: 1, name: 'BACKDROP: PARTY FLOOR',  desc: 'Throw a proper house party.',   sprite: 'assets/backdrop_party.png' },
       { id: 'backdrop_th_rosenheim', category: 'backdrop', cost: 300, cap: 1, name: 'BACKDROP: TH ROSENHEIM', desc: 'Rock the Rosenheim campus.',    sprite: 'assets/backdrop_th_rosenheim.png' },
@@ -234,6 +234,42 @@
   if (shopCloseBtn) shopCloseBtn.addEventListener('click', closeShop);
   if (shopModal) shopModal.addEventListener('click', (e) => { if (e.target === shopModal) closeShop(); });
 
+  /* ─── Cheat console (no backend, just for fun) ─── */
+  const cheatInput = document.getElementById('shop-cheat-input');
+  const cheatSubmit = document.getElementById('shop-cheat-submit');
+  const cheatResult = document.getElementById('shop-cheat-result');
+  const cheatRedeemed = new Set(JSON.parse(localStorage.getItem('rockster_cheat_used') || '[]'));
+  function showCheatResult(msg, ok) {
+    if (!cheatResult) return;
+    cheatResult.textContent = msg;
+    cheatResult.classList.remove('hidden', 'cheat-ok', 'cheat-bad');
+    cheatResult.classList.add(ok ? 'cheat-ok' : 'cheat-bad');
+  }
+  function tryCheat() {
+    if (!cheatInput) return;
+    const code = (cheatInput.value || '').trim().toUpperCase();
+    if (!code) return;
+    cheatInput.value = '';
+    if (code === 'OPUS') {
+      if (cheatRedeemed.has('OPUS')) {
+        showCheatResult('Already redeemed. Nice try.', false);
+        return;
+      }
+      Coins.add(1000000);
+      cheatRedeemed.add('OPUS');
+      localStorage.setItem('rockster_cheat_used', JSON.stringify([...cheatRedeemed]));
+      Audio8Bit.playClick();
+      showCheatResult('🎉 +1,000,000 COINS — courtesy of Opus.', true);
+      renderShop();
+      return;
+    }
+    showCheatResult('Unknown code. Maybe try harder.', false);
+  }
+  if (cheatSubmit) cheatSubmit.addEventListener('click', tryCheat);
+  if (cheatInput) cheatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') tryCheat();
+  });
+
   /* ─── Secret page gate ─── */
   const SECRET_COST = 10000;
   const secretBtn = document.getElementById('secret-btn');
@@ -274,6 +310,83 @@
     });
   }
 
+  /* ─── Secret page interactions ─── */
+  // Mood buttons
+  const moodGoodBtn = document.getElementById('mood-good-btn');
+  const moodBadBtn  = document.getElementById('mood-bad-btn');
+  const moodReply   = document.getElementById('mood-reply');
+  function showMoodReply(html, cls) {
+    if (!moodReply) return;
+    moodReply.innerHTML = html;
+    moodReply.classList.remove('hidden', 'mood-good-reply', 'mood-bad-reply');
+    moodReply.classList.add(cls);
+  }
+  if (moodGoodBtn) moodGoodBtn.addEventListener('click', () => {
+    Audio8Bit.playClick();
+    showMoodReply('FANTASTIC. Now go drink some Black Forest water. 💧', 'mood-good-reply');
+  });
+  if (moodBadBtn)  moodBadBtn.addEventListener('click', () => {
+    Audio8Bit.playClick();
+    showMoodReply('shiiiiiiiiiiii', 'mood-bad-reply');
+  });
+
+  // Photo carousel
+  const carouselStage = document.getElementById('carousel-stage');
+  const carouselDots  = document.getElementById('carousel-dots');
+  const carouselPrev  = document.getElementById('carousel-prev');
+  const carouselNext  = document.getElementById('carousel-next');
+  const PHOTOS = [
+    'assets/photo1.jpeg',
+    'assets/photo2.jpeg',
+    'assets/photo3.jpeg',
+    'assets/photo4.jpeg',
+    'assets/photo5.jpeg',
+  ];
+  let carouselIdx = 0;
+  let carouselTimer = null;
+
+  function renderCarousel() {
+    if (!carouselStage) return;
+    carouselStage.innerHTML = '';
+    PHOTOS.forEach((src, i) => {
+      const slide = document.createElement('div');
+      slide.className = 'carousel-slide' + (i === carouselIdx ? ' active' : '');
+      slide.innerHTML = `<img src="${src}" alt="Photo ${i + 1}" loading="lazy">`;
+      carouselStage.appendChild(slide);
+    });
+    if (carouselDots) {
+      carouselDots.innerHTML = '';
+      PHOTOS.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'carousel-dot' + (i === carouselIdx ? ' active' : '');
+        dot.setAttribute('aria-label', `Go to photo ${i + 1}`);
+        dot.addEventListener('click', () => goToSlide(i));
+        carouselDots.appendChild(dot);
+      });
+    }
+  }
+  function goToSlide(i) {
+    carouselIdx = (i + PHOTOS.length) % PHOTOS.length;
+    renderCarousel();
+    restartAutoplay();
+  }
+  function nextSlide() { goToSlide(carouselIdx + 1); }
+  function prevSlide() { goToSlide(carouselIdx - 1); }
+  function restartAutoplay() {
+    if (carouselTimer) clearInterval(carouselTimer);
+    carouselTimer = setInterval(nextSlide, 5000);
+  }
+
+  if (carouselPrev) carouselPrev.addEventListener('click', () => { Audio8Bit.playClick(); prevSlide(); });
+  if (carouselNext) carouselNext.addEventListener('click', () => { Audio8Bit.playClick(); nextSlide(); });
+  // Pause autoplay on hover
+  const carouselFrame = document.getElementById('carousel-frame');
+  if (carouselFrame) {
+    carouselFrame.addEventListener('mouseenter', () => { if (carouselTimer) clearInterval(carouselTimer); });
+    carouselFrame.addEventListener('mouseleave', () => restartAutoplay());
+  }
+  renderCarousel();
+
   /* ─── Revive (Second Chance) overlay buttons ─── */
   const reviveYes = document.getElementById('revive-yes-btn');
   const reviveNo  = document.getElementById('revive-no-btn');
@@ -305,6 +418,13 @@
     if (name === 'credits') resetCreditsScroll();
     // Orientation lock is only enforced while playing
     document.body.classList.toggle('game-active', name === 'game');
+    // Carousel autoplay only on secret page
+    if (name === 'secret') {
+      if (typeof restartAutoplay === 'function') restartAutoplay();
+    } else if (carouselTimer) {
+      clearInterval(carouselTimer);
+      carouselTimer = null;
+    }
   }
 
   /* ─── Menu buttons ─── */
