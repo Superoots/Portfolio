@@ -426,12 +426,70 @@ const Game = (() => {
     return POWERUP_TYPES[0];
   }
 
+  // Returns the rect of the bottom controls panel (in canvas-local coords),
+  // OR null if it can't be measured. Power-ups fall around it (left or right
+  // of it) instead of despawning at its top edge.
+  function computeBottomObstacleRect() {
+    const wrap = document.getElementById('rockster-knob-wrap');
+    if (!wrap || !canvas) return null;
+    const r = wrap.getBoundingClientRect();
+    const cr = canvas.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) return null;
+    return {
+      x1: r.left   - cr.left - 8,
+      y1: r.top    - cr.top  - 8,
+      x2: r.right  - cr.left + 8,
+      y2: r.bottom - cr.top  + 8,
+    };
+  }
+
+  // Returns a list of rects (in canvas-local coords) that power-ups must avoid
+  // when they fall — UI buttons that could intercept clicks. The bottom controls
+  // panel is handled separately by computeBottomObstacleTop.
+  // Only includes elements that are actually visible to the user right now.
+  function computeClickObstacleRects() {
+    if (!canvas) return [];
+    const cr = canvas.getBoundingClientRect();
+    // Only obstacles that exist while in the game view
+    const ids = ['game-back-btn'];
+    const rects = [];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      // Skip elements that aren't actually rendered/visible
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') return;
+      const r = el.getBoundingClientRect();
+      if (r.width === 0 || r.height === 0) return;
+      // Skip obstacles that aren't intersecting the canvas at all
+      if (r.bottom < cr.top || r.top > cr.bottom) return;
+      rects.push({
+        x1: r.left   - cr.left - 8,
+        y1: r.top    - cr.top  - 8,
+        x2: r.right  - cr.left + 8,
+        y2: r.bottom - cr.top  + 8,
+      });
+    });
+    return rects;
+  }
+
   function spawnPowerup() {
     const t = pickPowerupType();
     const size = 48;
     const margin = size + 30;
+    // Pick an x that doesn't sit directly above any UI obstacle column
+    const obstacles = computeClickObstacleRects();
+    let x;
+    let attempts = 0;
+    do {
+      x = margin + Math.random() * (W - margin * 2);
+      attempts++;
+    } while (
+      attempts < 8 &&
+      obstacles.some(r => x + size / 2 > r.x1 && x - size / 2 < r.x2)
+    );
     powerups.push({
-      x: margin + Math.random() * (W - margin * 2),
+      x,
       y: -size,
       vy: 110 + Math.random() * 60,
       vx: (Math.random() - 0.5) * 40,
@@ -661,13 +719,45 @@ const Game = (() => {
       const maxGap = Math.max(6, 12 - stageIdx * 2);
       nextPowerupAt = timeElapsed + minGap + Math.random() * (maxGap - minGap);
     }
+    const bottomRect = computeBottomObstacleRect();
+    const clickObstacles = computeClickObstacleRects();
     powerups.forEach(p => {
       p.y += p.vy * dt;
       p.x += p.vx * dt;
       p.wobble += dt * 3;
       p.vx += Math.sin(p.wobble) * 8 * dt;
+
+      // Steer power-ups around the bottom controls panel: when they approach
+      // the panel's vertical band, nudge them horizontally toward the closer side
+      // so they slide past it instead of falling into it.
+      if (bottomRect) {
+        const half = p.size / 2;
+        const aboutToEnter = (p.y + half) > (bottomRect.y1 - 60) && (p.y - half) < bottomRect.y2;
+        const inXRange = (p.x + half) > bottomRect.x1 && (p.x - half) < bottomRect.x2;
+        if (aboutToEnter && inXRange) {
+          const panelCenter = (bottomRect.x1 + bottomRect.x2) / 2;
+          const dir = p.x < panelCenter ? -1 : 1;
+          // Steady push outward; gentle so it looks natural
+          p.vx += dir * 220 * dt;
+          // Hard clamp once already touching the panel rect
+          if ((p.y + half) > bottomRect.y1 && (p.y - half) < bottomRect.y2) {
+            const clampX = dir < 0 ? bottomRect.x1 - half : bottomRect.x2 + half;
+            p.x = dir < 0 ? Math.min(p.x, clampX) : Math.max(p.x, clampX);
+          }
+        }
+      }
     });
-    powerups = powerups.filter(p => p.y < H + 80);
+
+    // Despawn power-ups that exit the bottom of the canvas, OR overlap a UI button rect
+    powerups = powerups.filter(p => {
+      if ((p.y - p.size / 2) > H) return false;
+      const half = p.size / 2;
+      const px1 = p.x - half, py1 = p.y - half, px2 = p.x + half, py2 = p.y + half;
+      for (const r of clickObstacles) {
+        if (px1 < r.x2 && px2 > r.x1 && py1 < r.y2 && py2 > r.y1) return false;
+      }
+      return true;
+    });
 
     // Power-up flash decay
     if (powerupFlash > 0) powerupFlash = Math.max(0, powerupFlash - dt * 1.2);

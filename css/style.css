@@ -899,6 +899,87 @@ html, body {
   text-shadow: 2px 2px 0 var(--accent-yellow);
   animation: pulse 0.8s ease-in-out infinite alternate;
 }
+
+/* Hall of Fame block — Miyon, first to break 10k */
+.hof {
+  display: inline-block;
+  padding: 24px 36px;
+  background: radial-gradient(ellipse at center, rgba(80, 50, 0, 0.5) 0%, rgba(0, 0, 0, 0.7) 80%);
+  border: 4px double var(--accent-yellow);
+  position: relative;
+  margin: 8px 0;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.35), inset 0 0 14px rgba(255, 215, 0, 0.15);
+}
+.hof::before, .hof::after {
+  content: '✦';
+  position: absolute;
+  font-size: 22px;
+  color: var(--accent-yellow);
+  animation: hofTwinkle 1.4s ease-in-out infinite alternate;
+}
+.hof::before { top: -14px; left: 14px; }
+.hof::after  { bottom: -14px; right: 14px; animation-delay: 0.7s; }
+.hof-label {
+  font-size: clamp(8px, 1.6vw, 11px);
+  color: var(--accent-yellow);
+  letter-spacing: 6px;
+  margin-bottom: 12px;
+}
+.hof-trophy {
+  font-size: clamp(48px, 7vw, 84px);
+  line-height: 1;
+  margin: 4px 0 12px;
+  animation: hofTrophyBob 2.6s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 14px rgba(255, 215, 0, 0.6));
+}
+.hof-title {
+  font-size: clamp(8px, 1.5vw, 11px);
+  color: var(--accent-cyan);
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+}
+.hof-name {
+  font-size: clamp(22px, 4.5vw, 42px);
+  color: var(--accent-yellow);
+  text-shadow:
+    3px 3px 0 var(--accent-magenta),
+    0 0 18px rgba(255, 215, 0, 0.7);
+  letter-spacing: 6px;
+  margin: 6px 0;
+  animation: hofNameGlow 1.8s ease-in-out infinite alternate;
+}
+.hof-score {
+  font-size: clamp(10px, 1.8vw, 14px);
+  color: var(--accent-green);
+  letter-spacing: 2px;
+  margin-top: 8px;
+  text-shadow: 0 0 10px rgba(128, 237, 153, 0.6);
+}
+.hof-date {
+  font-size: clamp(8px, 1.3vw, 11px);
+  color: var(--text-dim);
+  letter-spacing: 3px;
+  margin-top: 4px;
+}
+.hof-quote {
+  font-size: clamp(7px, 1.2vw, 10px);
+  color: var(--accent-cyan);
+  font-style: italic;
+  letter-spacing: 1px;
+  margin-top: 12px;
+}
+@keyframes hofTwinkle {
+  0%   { opacity: 0.4; transform: scale(0.85) rotate(0deg); }
+  100% { opacity: 1;   transform: scale(1.2)  rotate(15deg); }
+}
+@keyframes hofTrophyBob {
+  0%   { transform: translateY(0)    scale(1); }
+  100% { transform: translateY(-6px) scale(1.05); }
+}
+@keyframes hofNameGlow {
+  0%   { text-shadow: 3px 3px 0 var(--accent-magenta), 0 0 12px rgba(255, 215, 0, 0.6); }
+  100% { text-shadow: 3px 3px 0 var(--accent-magenta), 0 0 32px rgba(255, 215, 0, 1), 0 0 48px rgba(255, 215, 0, 0.5); }
+}
 .credits-back-btn {
   position: absolute;
   bottom: 16px;
@@ -1105,6 +1186,55 @@ html, body {
 .stat-cell {
   display: block;
   height: 100%;
+}
+
+/* Intensity row — descriptor, not a score: shows a labeled spectrum with a marker */
+.intensity-row {
+  grid-template-columns: 84px 1fr 80px;
+}
+.waters-hero .intensity-row {
+  grid-template-columns: 120px 1fr 110px;
+}
+.intensity-row .intensity-track {
+  position: relative;
+  height: 12px;
+  background: linear-gradient(90deg, #2a3b4d 0%, #4a5e75 50%, #6b7d96 100%);
+  border: 1px solid #3a4a5e;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+  font-size: 6px;
+  font-family: var(--font);
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 1px;
+  user-select: none;
+}
+.waters-hero .intensity-row .intensity-track {
+  height: 14px;
+  font-size: 7px;
+}
+.intensity-end {
+  position: relative;
+  z-index: 1;
+}
+.intensity-marker {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 6px;
+  margin-left: -3px;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 6px var(--accent-cyan);
+  z-index: 2;
+}
+.intensity-value {
+  font-size: 7px !important;
+  color: var(--accent-cyan) !important;
+  letter-spacing: 1px;
+}
+.waters-hero .intensity-value {
+  font-size: 9px !important;
 }
 
 /* Overall score */
@@ -1501,8 +1631,215 @@ html, body {
   line-height: 1.6;
 }
 .shop-cheat-result.hidden { display: none; }
+.shop-cheat-progress {
+  margin-bottom: 12px;
+  font-family: var(--font);
+  font-size: 10px;
+  color: var(--accent-yellow);
+  letter-spacing: 1px;
+}
+.shop-cheat-progress.hidden { display: none; }
 .cheat-ok  { color: var(--accent-yellow); text-shadow: 0 0 10px rgba(255,215,0,0.5); }
 .cheat-bad { color: var(--accent-red);    font-style: italic; }
+
+/* MIYON cheat: fake progress bar inside the result line */
+.cheat-ellipsis {
+  display: inline-block;
+  width: 1.2em;
+  text-align: left;
+  animation: cheatEllipsis 0.5s steps(4, end) infinite;
+}
+@keyframes cheatEllipsis {
+  0%   { content: ''; }
+  100% { content: '...'; }
+}
+.cheat-progress {
+  margin: 8px auto 0;
+  width: 220px;
+  max-width: 80%;
+  height: 8px;
+  background: #111;
+  border: 1px solid #333;
+  overflow: hidden;
+}
+.cheat-progress-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #ff6ec7, #4fc3f7);
+  animation: cheatProgress 1.4s linear forwards;
+}
+@keyframes cheatProgress {
+  0%   { width: 0%; }
+  100% { width: 100%; }
+}
+
+/* ═══════════════════════════════════════════
+   MIYON CEREMONY OVERLAY
+   ═══════════════════════════════════════════ */
+#miyon-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  cursor: pointer;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+#miyon-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+#miyon-overlay.hidden { display: none; }
+
+/* Pink flash that pulses once when the cat slams in */
+.miyon-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255, 110, 199, 0.9), rgba(255, 110, 199, 0) 70%);
+  opacity: 0;
+  pointer-events: none;
+}
+#miyon-overlay.active .miyon-flash {
+  animation: miyonFlash 0.5s ease-out;
+}
+@keyframes miyonFlash {
+  0%   { opacity: 0;    transform: scale(0.6); }
+  20%  { opacity: 0.95; transform: scale(1.05); }
+  60%  { opacity: 0.4;  transform: scale(1.4); }
+  100% { opacity: 0;    transform: scale(2); }
+}
+
+/* Stage = the cat + caption block, centered */
+.miyon-stage {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Cat slams in with shake */
+.miyon-cat-wrap {
+  width: clamp(220px, 45vw, 460px);
+  height: clamp(220px, 45vw, 460px);
+  border: 6px solid #ff6ec7;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow:
+    0 0 30px rgba(255, 110, 199, 0.8),
+    0 0 60px rgba(255, 110, 199, 0.5),
+    inset 0 0 14px rgba(255, 110, 199, 0.4);
+}
+.miyon-cat {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: auto;
+}
+#miyon-overlay.active .miyon-cat-wrap {
+  animation: miyonSlamIn 0.55s cubic-bezier(0.18, 0.89, 0.32, 1.28),
+             miyonShake 0.4s ease-in-out 0.55s,
+             miyonFloat 3s ease-in-out 1s infinite;
+}
+@keyframes miyonSlamIn {
+  0%   { transform: scale(0)    rotate(-25deg); opacity: 0; }
+  60%  { transform: scale(1.2)  rotate(8deg);   opacity: 1; }
+  80%  { transform: scale(0.95) rotate(-3deg); }
+  100% { transform: scale(1)    rotate(0); }
+}
+@keyframes miyonShake {
+  0%, 100% { transform: translate(0, 0) rotate(0); }
+  20%      { transform: translate(-8px, 4px)  rotate(-2deg); }
+  40%      { transform: translate(8px, -4px)  rotate(2deg); }
+  60%      { transform: translate(-6px, 2px)  rotate(-1deg); }
+  80%      { transform: translate(6px, -2px)  rotate(1deg); }
+}
+@keyframes miyonFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* Caption */
+.miyon-caption {
+  font-family: var(--font);
+  font-size: clamp(20px, 5vw, 44px);
+  color: #ff6ec7;
+  letter-spacing: 4px;
+  text-shadow:
+    3px 3px 0 var(--accent-magenta),
+    0 0 24px rgba(255, 110, 199, 0.9),
+    0 0 48px rgba(255, 110, 199, 0.5);
+  opacity: 0;
+}
+#miyon-overlay.active .miyon-caption {
+  animation: miyonCaption 0.5s ease-out 0.55s forwards,
+             miyonCaptionGlow 1.6s ease-in-out 1s infinite alternate;
+}
+@keyframes miyonCaption {
+  0%   { opacity: 0; transform: scale(0.4) rotate(-8deg); }
+  100% { opacity: 1; transform: scale(1)   rotate(0); }
+}
+@keyframes miyonCaptionGlow {
+  0%   { text-shadow: 3px 3px 0 var(--accent-magenta), 0 0 16px rgba(255,110,199,0.7); }
+  100% { text-shadow: 3px 3px 0 var(--accent-magenta), 0 0 40px rgba(255,110,199,1), 0 0 64px rgba(255,110,199,0.7); }
+}
+
+.miyon-sub {
+  font-family: var(--font);
+  font-size: clamp(7px, 1.4vw, 11px);
+  color: var(--accent-yellow);
+  letter-spacing: 4px;
+  opacity: 0;
+}
+#miyon-overlay.active .miyon-sub {
+  animation: miyonCaption 0.4s ease-out 0.85s forwards;
+}
+.miyon-dismiss {
+  font-family: var(--font);
+  font-size: clamp(6px, 1.1vw, 9px);
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 2px;
+  margin-top: 12px;
+  opacity: 0;
+}
+#miyon-overlay.active .miyon-dismiss {
+  animation: miyonCaption 0.4s ease-out 1.5s forwards;
+}
+
+/* Confetti */
+.miyon-confetti {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.miyon-confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 10px;
+  height: 14px;
+  background: #fff;
+  animation-name: miyonConfettiFall;
+  animation-timing-function: linear;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+@keyframes miyonConfettiFall {
+  0%   { transform: translateY(0) rotate(0deg);    opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
 
 /* Mobile full-screen shop */
 @media (max-width: 700px) {

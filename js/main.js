@@ -263,7 +263,60 @@
       renderShop();
       return;
     }
+    if (code === 'MIYON') {
+      Audio8Bit.playClick();
+      runMiyonCeremony();
+      return;
+    }
     showCheatResult('Unknown code. Maybe try harder.', false);
+  }
+
+  /* ─── MIYON cheat ceremony ─── */
+  function runMiyonCeremony() {
+    const progress = document.getElementById('shop-cheat-progress');
+    if (cheatResult) cheatResult.classList.add('hidden');
+    if (progress) {
+      progress.innerHTML = '🔍 VERIFYING<span class="cheat-ellipsis">...</span><div class="cheat-progress"><div class="cheat-progress-fill"></div></div>';
+      progress.classList.remove('hidden');
+    }
+    setTimeout(() => {
+      if (progress) progress.classList.add('hidden');
+      triggerMiyonReveal();
+    }, 1500);
+  }
+
+  function triggerMiyonReveal() {
+    const overlay = document.getElementById('miyon-overlay');
+    if (!overlay) return;
+    overlay.classList.remove('hidden');
+    // Force reflow so animations restart on subsequent triggers
+    void overlay.offsetWidth;
+    overlay.classList.add('active');
+
+    // Spawn confetti
+    const confettiHost = overlay.querySelector('.miyon-confetti');
+    if (confettiHost) {
+      confettiHost.innerHTML = '';
+      const colors = ['#ff6ec7', '#ffd54f', '#4fc3f7', '#a5d6a7', '#e040fb', '#fff'];
+      for (let i = 0; i < 60; i++) {
+        const c = document.createElement('div');
+        c.className = 'miyon-confetti-piece';
+        c.style.left = Math.random() * 100 + '%';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.animationDelay = (Math.random() * 0.8).toFixed(2) + 's';
+        c.style.animationDuration = (1.6 + Math.random() * 1.6).toFixed(2) + 's';
+        c.style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+        confettiHost.appendChild(c);
+      }
+    }
+
+    // Auto-dismiss handler
+    const close = () => {
+      overlay.classList.remove('active');
+      setTimeout(() => overlay.classList.add('hidden'), 400);
+      overlay.removeEventListener('click', close);
+    };
+    overlay.addEventListener('click', close);
   }
   if (cheatSubmit) cheatSubmit.addEventListener('click', tryCheat);
   if (cheatInput) cheatInput.addEventListener('keydown', (e) => {
@@ -647,17 +700,36 @@
   /* ═══════════════════════════════════════════
      WATERS RANKING
      ═══════════════════════════════════════════ */
-  const watersData = [
-    { rank: 1, name: 'BLACK FOREST',  medal: '🥇', intensity: 10,  taste: 10,  thirst: 10,  price: 9,  overall: 9.75, note: 'THE KING. AFFORDABLE, ICONIC, PERFECT.' },
-    { rank: 2, name: 'LAURETANA',     medal: '🥈', intensity: 9.5, taste: 9.5, thirst: 8,   price: 6,  overall: 8.25, note: 'ITALIAN PREMIUM. SMOOTH AND ELITE.' },
-    { rank: 3, name: 'VOLVIC',        medal: '🥉', intensity: 7.5, taste: 8.5, thirst: 10,  price: 6,  overall: 8.0,  note: 'VOLCANIC FRENCH CLASSIC. A BIT PRICIER, WORTH IT.' },
-    { rank: 4, name: 'SANTA EMILIA',  medal: '◆', intensity: 3,   taste: 8,   thirst: 9,   price: 5,  overall: 7.75, note: 'ONE OF THE CLEANEST, FRESHEST WATERS I KNOW.' },
-    { rank: 5, name: 'ADELHOLZENER',  medal: '◆', intensity: 6,   taste: 9,   thirst: 8,   price: 7,  overall: 7.5,  note: 'BAVARIAN ALPINE PURITY.' },
-    { rank: 6, name: 'VIO',           medal: '◆', intensity: 4,   taste: 8.5, thirst: 9.5, price: 7,  overall: 7.25, note: 'SOFT, CLEAN, SOLID DAILY DRIVER.' },
-    { rank: 7, name: 'FIJI',          medal: '◆', intensity: 5,   taste: 7,   thirst: 9,   price: 1,  overall: 5.5,  note: 'SHIPPED HALFWAY AROUND THE WORLD. WHY.' },
-    { rank: 8, name: 'GEROLSTEINER',  medal: '◆', intensity: 9,   taste: 2,   thirst: 2,   price: 7,  overall: 5.0,  note: 'TOO MUCH MINERAL. TASTES LIKE A COIN.' },
-    { rank: 9, name: 'EVIAN',         medal: '◆', intensity: 3,   taste: 5,   thirst: 6,   price: 4,  overall: 4.5,  note: 'OVERPRICED. NAMED GERMANY\'S RIP-OFF OF THE MONTH 2016.' },
+  // Intensity is a flavor descriptor (LIGHT ↔ STRONG), NOT a quality score.
+  // Overall is computed from (taste + thirst + price) / 3.
+  const INTENSITY_LEVELS = ['VERY LOW', 'LOW', 'LOW-MID', 'MID', 'MID-HIGH', 'HIGH', 'VERY HIGH'];
+  const INTENSITY_INDEX = { 'VERY LOW': 0, 'LOW': 1, 'LOW-MID': 2, 'MID': 3, 'MID-HIGH': 4, 'HIGH': 5, 'VERY HIGH': 6 };
+
+  const watersRaw = [
+    { name: 'BLACK FOREST',  taste: 10,  thirst: 10,  price: 9,   intensity: 'VERY HIGH', note: 'THE KING. AFFORDABLE, ICONIC, PERFECT.' },
+    { name: 'LAURETANA',     taste: 9.5, thirst: 8.5, price: 7.5, intensity: 'HIGH',      note: 'ITALIAN PREMIUM. SMOOTH AND ELITE.' },
+    { name: 'VOLVIC',        taste: 8.5, thirst: 9,   price: 6.5, intensity: 'MID-HIGH',  note: 'VOLCANIC FRENCH CLASSIC. A BIT PRICIER, WORTH IT.' },
+    { name: 'SANTA EMILIA',  taste: 8,   thirst: 9.5, price: 5,   intensity: 'VERY LOW',  note: 'ONE OF THE CLEANEST, FRESHEST WATERS I KNOW.' },
+    { name: 'ADELHOLZENER',  taste: 8,   thirst: 8,   price: 7,   intensity: 'LOW-MID',   note: 'BAVARIAN ALPINE PURITY.' },
+    { name: 'VIO',           taste: 8.5, thirst: 9,   price: 7,   intensity: 'LOW',       note: 'SOFT, CLEAN, SOLID DAILY DRIVER.' },
+    { name: 'FIJI',          taste: 8.5, thirst: 9,   price: 1,   intensity: 'LOW',       note: 'SHIPPED HALFWAY AROUND THE WORLD. WHY.' },
+    { name: 'GEROLSTEINER',  taste: 1,   thirst: 2,   price: 5,   intensity: 'VERY HIGH', note: 'TOO MUCH MINERAL. TASTES LIKE A COIN.' },
+    { name: 'EVIAN',         taste: 4,   thirst: 7,   price: 5,   intensity: 'LOW',       note: 'OVERPRICED. NAMED GERMANY\'S RIP-OFF OF THE MONTH 2016.' },
+    { name: 'KRUMBACH',      taste: 4,   thirst: 5,   price: 8,   intensity: 'MID',       note: 'METALLIC EDGE — LIKE A LIGHT GEROLSTEINER. BUT IT\'S CHEAP.' },
   ];
+
+  // Auto-compute overall + sort + assign ranks/medals
+  const watersData = watersRaw
+    .map(w => ({
+      ...w,
+      overall: Math.round(((w.taste + w.thirst + w.price) / 3) * 100) / 100,
+    }))
+    .sort((a, b) => b.overall - a.overall)
+    .map((w, i) => ({
+      ...w,
+      rank: i + 1,
+      medal: i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '◆',
+    }));
 
   function statBar(value) {
     const filled = Math.round(value);
@@ -681,6 +753,21 @@
       </div>`;
   }
 
+  function intensityRow(label) {
+    const idx = INTENSITY_INDEX[label] != null ? INTENSITY_INDEX[label] : 3;
+    const positionPct = (idx / (INTENSITY_LEVELS.length - 1)) * 100;
+    return `
+      <div class="stat-row intensity-row">
+        <span class="stat-label">INTENSITY</span>
+        <div class="intensity-track" title="${label}">
+          <span class="intensity-end intensity-end-left">LIGHT</span>
+          <span class="intensity-end intensity-end-right">STRONG</span>
+          <span class="intensity-marker" style="left:${positionPct}%"></span>
+        </div>
+        <span class="stat-value intensity-value">${label}</span>
+      </div>`;
+  }
+
   const waterHero = document.getElementById('waters-hero');
   const watersList = document.getElementById('waters-list');
 
@@ -691,10 +778,10 @@
     <h3 class="water-name hero-name">${hero.name}</h3>
     <p class="water-note hero-note">${hero.note}</p>
     <div class="water-stats">
-      ${statRow('INTENSITY', hero.intensity)}
-      ${statRow('TASTE',     hero.taste)}
-      ${statRow('THIRST',    hero.thirst)}
-      ${statRow('PRICE',     hero.price)}
+      ${intensityRow(hero.intensity)}
+      ${statRow('TASTE',  hero.taste)}
+      ${statRow('THIRST', hero.thirst)}
+      ${statRow('PRICE',  hero.price)}
     </div>
     <div class="water-overall hero-overall">
       <span class="overall-label">OVERALL</span>
@@ -711,10 +798,10 @@
       <h4 class="water-name">${w.name}</h4>
       <p class="water-note">${w.note}</p>
       <div class="water-stats">
-        ${statRow('INTENSITY', w.intensity)}
-        ${statRow('TASTE',     w.taste)}
-        ${statRow('THIRST',    w.thirst)}
-        ${statRow('PRICE',     w.price)}
+        ${intensityRow(w.intensity)}
+        ${statRow('TASTE',  w.taste)}
+        ${statRow('THIRST', w.thirst)}
+        ${statRow('PRICE',  w.price)}
       </div>
       <div class="water-overall">
         <span class="overall-label">OVERALL</span>
@@ -764,8 +851,20 @@
   }
   generateStars();
 
+  // Extra translateY offset the user can apply by scrolling/swiping on top
+  // of the running CSS animation, so impatient viewers can fast-forward.
+  let creditsUserOffset = 0;
+
+  function applyCreditsOffset() {
+    const scroll = document.getElementById('credits-scroll');
+    if (scroll) scroll.style.transform = `translateY(${creditsUserOffset}px)`;
+  }
+
   function resetCreditsScroll() {
     const scroll = document.getElementById('credits-scroll');
+    // Reset user offset
+    creditsUserOffset = 0;
+    if (scroll) scroll.style.transform = '';
     // Force restart animation
     scroll.classList.add('paused');
     scroll.style.animation = 'none';
@@ -774,6 +873,36 @@
     scroll.style.animation = '';
     scroll.classList.remove('paused');
   }
+
+  // Wire fast-forward via wheel + touch on the credits wrapper
+  (() => {
+    const wrapper = document.getElementById('credits-scroll-wrapper') ||
+                    document.querySelector('.credits-scroll-wrapper');
+    if (!wrapper) return;
+    wrapper.addEventListener('wheel', (e) => {
+      // Only react when credits view is active
+      if (!views.credits.classList.contains('active')) return;
+      e.preventDefault();
+      // Negative deltaY = scrolling up; we move content up by lowering offset
+      creditsUserOffset -= e.deltaY * 1.4;
+      applyCreditsOffset();
+    }, { passive: false });
+
+    let touchY = null;
+    wrapper.addEventListener('touchstart', (e) => {
+      if (!views.credits.classList.contains('active')) return;
+      touchY = e.touches[0].clientY;
+    }, { passive: true });
+    wrapper.addEventListener('touchmove', (e) => {
+      if (!views.credits.classList.contains('active') || touchY == null) return;
+      const dy = e.touches[0].clientY - touchY;
+      touchY = e.touches[0].clientY;
+      // Drag up = move content up
+      creditsUserOffset += dy * 1.6;
+      applyCreditsOffset();
+    }, { passive: true });
+    wrapper.addEventListener('touchend', () => { touchY = null; }, { passive: true });
+  })();
 
   /* ═══════════════════════════════════════════
      MENU BACKGROUND ANIMATION
